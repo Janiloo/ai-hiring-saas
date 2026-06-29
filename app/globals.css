@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Shared form primitives */
+.input {
+  @apply w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400
+    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white;
+}
+
+.label {
+  @apply mb-1.5 block text-xs font-medium text-gray-700;
+}

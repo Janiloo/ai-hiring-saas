@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code session context (local tooling only)
+.claude/
+
+# Supabase local dev
+supabase/.branches/
+supabase/.temp/
+
+# OS files
+Thumbs.db
