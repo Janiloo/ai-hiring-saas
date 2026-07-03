@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 type State = "idle" | "loading" | "success" | "error";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -104,5 +104,14 @@ export default function ForgotPasswordPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+// useSearchParams requires a Suspense boundary for static prerendering
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }

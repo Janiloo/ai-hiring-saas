@@ -7,17 +7,19 @@ import { useRouter } from "next/navigation";
 import type { OrgRole } from "@/types/organization";
 
 interface AuthContextValue {
-  user:     User | null;
-  orgRole:  OrgRole | null;
-  orgId:    string | null;
-  loading:  boolean;
-  signOut:  () => Promise<void>;
+  user:    User | null;
+  orgRole: OrgRole | null;
+  orgId:   string | null;
+  orgName: string | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user:    null,
   orgRole: null,
   orgId:   null,
+  orgName: null,
   loading: true,
   signOut: async () => {},
 });
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user,    setUser]    = useState<User | null>(null);
   const [orgRole, setOrgRole] = useState<OrgRole | null>(null);
   const [orgId,   setOrgId]   = useState<string | null>(null);
+  const [orgName, setOrgName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router   = useRouter();
   const supabase = createClient();
@@ -33,13 +36,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function loadOrgMembership(uid: string) {
     const { data } = await supabase
       .from("organization_members")
-      .select("organization_id, role")
+      .select("organization_id, role, organizations(name)")
       .eq("user_id", uid)
       .limit(1)
       .maybeSingle();
 
     setOrgRole((data?.role as OrgRole) ?? null);
     setOrgId(data?.organization_id ?? null);
+
+    const org = Array.isArray(data?.organizations)
+      ? (data.organizations[0] as { name: string } | undefined)
+      : (data?.organizations as { name: string } | null | undefined);
+    setOrgName(org?.name ?? null);
   }
 
   useEffect(() => {
@@ -66,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setOrgRole(null);
           setOrgId(null);
+          setOrgName(null);
         }
       }
     );
@@ -79,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, orgRole, orgId, loading, signOut }}>
+    <AuthContext.Provider value={{ user, orgRole, orgId, orgName, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

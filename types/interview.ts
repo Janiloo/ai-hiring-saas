@@ -14,7 +14,8 @@ export interface Interview {
   organization_id: string | null;
   candidate_id: string;
   job_post_id: string | null;
-  interviewer: string;
+  interviewer: string;               // denormalized display name
+  interviewer_id: string | null;     // FK → auth.users (assigned interviewer)
   interview_type: InterviewType;
   scheduled_at: string;
   meeting_link: string | null;

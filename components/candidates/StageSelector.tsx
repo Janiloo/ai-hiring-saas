@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { STAGE_META, STAGE_ORDER, type CandidateStage } from "@/types/candidate";
+import { STAGE_META, STAGE_TRANSITIONS, type CandidateStage } from "@/types/candidate";
 import { updateCandidateStage } from "@/lib/actions/candidates";
 
 interface StageSelectorProps {
@@ -28,16 +28,18 @@ export default function StageSelector({ candidateId, currentStage }: StageSelect
   }
 
   const { color } = STAGE_META[stage];
+  // Only current stage + valid next transitions (state machine)
+  const options: CandidateStage[] = [stage, ...(STAGE_TRANSITIONS[stage] ?? [])];
 
   return (
     <div className="flex flex-col gap-1">
       <select
         value={stage}
         onChange={handleChange}
-        disabled={isPending}
+        disabled={isPending || options.length === 1}
         className={`rounded-lg border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 cursor-pointer ${color}`}
       >
-        {STAGE_ORDER.map((s) => (
+        {options.map((s) => (
           <option key={s} value={s} className="bg-white text-gray-900 font-normal">
             {STAGE_META[s].label}
           </option>

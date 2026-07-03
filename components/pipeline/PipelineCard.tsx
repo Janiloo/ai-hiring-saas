@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition, useState } from "react";
-import { STAGE_META, STAGE_ORDER, type CandidateStage, type CandidateWithJob } from "@/types/candidate";
+import { STAGE_META, STAGE_TRANSITIONS, type CandidateStage, type CandidateWithJob } from "@/types/candidate";
 import { updateCandidateStage } from "@/lib/actions/candidates";
 
 function initials(name: string) {
@@ -58,10 +58,10 @@ export default function PipelineCard({ candidate }: { candidate: CandidateWithJo
         <select
           value={stage}
           onChange={handleStageChange}
-          disabled={isPending}
+          disabled={isPending || (STAGE_TRANSITIONS[stage] ?? []).length === 0}
           className="w-full rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-indigo-400 focus:outline-none disabled:opacity-50 cursor-pointer"
         >
-          {STAGE_ORDER.map((s) => (
+          {[stage, ...(STAGE_TRANSITIONS[stage] ?? [])].map((s) => (
             <option key={s} value={s}>{STAGE_META[s].label}</option>
           ))}
         </select>

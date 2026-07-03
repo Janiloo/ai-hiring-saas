@@ -8,13 +8,15 @@ import Pagination from "@/components/Pagination";
 import { getCandidates } from "@/lib/queries/candidates";
 import { getJobPosts } from "@/lib/queries/job-posts";
 import { getUserOrganization } from "@/lib/queries/invitations";
-import type { CandidateStage } from "@/types/candidate";
+import SyncInboxButton from "@/components/candidates/SyncInboxButton";
+import type { CandidateStage, AIRecommendation } from "@/types/candidate";
 
 interface PageProps {
   searchParams: Promise<{
     q?: string;
     stage?: string;
     job?: string;
+    ai?: string;
     page?: string;
   }>;
 }
@@ -33,11 +35,12 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const query = params.q ?? "";
   const stage = (params.stage ?? "all") as CandidateStage | "all";
   const job_post_id = params.job ?? "all";
+  const ai = (params.ai ?? "all") as AIRecommendation | "all";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
 
   const [{ data: candidates, count, totalPages }, { data: jobs }, orgResult] =
     await Promise.all([
-      getCandidates({ query, stage, job_post_id, page }),
+      getCandidates({ query, stage, job_post_id, ai, page }),
       getJobPosts({ page: 1 }),
       getUserOrganization(),
     ]);
@@ -55,12 +58,15 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           subtitle="Browse and manage all applicants across your open roles."
         />
         {canManage && (
+          <div className="flex shrink-0 items-center gap-3">
+          <SyncInboxButton />
           <Link
             href="/dashboard/candidates/new"
             className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
           >
             + Add Candidate
           </Link>
+          </div>
         )}
       </div>
 

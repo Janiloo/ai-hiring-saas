@@ -11,7 +11,7 @@ export default function DeleteJobButton({ id }: { id: string }) {
   function handleDelete() {
     startTransition(async () => {
       const result = await deleteJobPost(id);
-      if (result?.error) setError(result.error);
+      if (result && "error" in result) setError(result.error);
     });
   }
 

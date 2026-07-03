@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useTransition } from "react";
-import { STAGE_ORDER, STAGE_META, type CandidateStage } from "@/types/candidate";
+import { STAGE_ORDER, STAGE_META, AI_RECOMMENDATION_META, type CandidateStage, type AIRecommendation } from "@/types/candidate";
 
 interface JobOption {
   id: string;
@@ -21,6 +21,7 @@ export default function CandidateFilters({ jobs }: CandidateFiltersProps) {
 
   const currentStage = searchParams.get("stage") ?? "all";
   const currentJob = searchParams.get("job") ?? "all";
+  const currentAI = searchParams.get("ai") ?? "all";
   const currentQuery = searchParams.get("q") ?? "";
 
   const updateParams = useCallback(
@@ -63,6 +64,18 @@ export default function CandidateFilters({ jobs }: CandidateFiltersProps) {
         <option value="all">All stages</option>
         {STAGE_ORDER.map((s: CandidateStage) => (
           <option key={s} value={s}>{STAGE_META[s].label}</option>
+        ))}
+      </select>
+
+      {/* AI recommendation filter */}
+      <select
+        value={currentAI}
+        onChange={(e) => updateParams({ ai: e.target.value })}
+        className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+      >
+        <option value="all">All AI results</option>
+        {(Object.keys(AI_RECOMMENDATION_META) as AIRecommendation[]).map((r) => (
+          <option key={r} value={r}>{AI_RECOMMENDATION_META[r].label}</option>
         ))}
       </select>
 

@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
 import { type InterviewType, type InterviewStatus, INTERVIEW_TYPE_LABELS } from "@/types/interview";
 import { logActivity } from "@/lib/utils/log-activity";
+import { processEmailEvents } from "@/lib/utils/email-events";
 
 type ActionState = { error: string } | null;
 
@@ -15,6 +16,7 @@ function parseFormData(formData: FormData) {
     candidate_id:   formData.get("candidate_id") as string,
     job_post_id:    (formData.get("job_post_id") as string) || null,
     interviewer:    formData.get("interviewer") as string,
+    interviewer_id: (formData.get("interviewer_id") as string) || null,
     interview_type: formData.get("interview_type") as InterviewType,
     scheduled_at:   formData.get("scheduled_at") as string,
     meeting_link:   (formData.get("meeting_link") as string) || null,
@@ -50,6 +52,21 @@ export async function createInterview(
 
   if (error) return { error: error.message };
 
+  // Step 1 of the interview flow: scheduling moves the candidate into the
+  // Interview pipeline stage (recruiter/admin action — allowed transition).
+  const { data: cand } = await supabase
+    .from("candidates")
+    .select("stage")
+    .eq("id", fields.candidate_id)
+    .maybeSingle();
+
+  if (cand && ["applied", "screening", "shortlisted"].includes(cand.stage)) {
+    await supabase
+      .from("candidates")
+      .update({ stage: "interview" })
+      .eq("id", fields.candidate_id);
+  }
+
   await logActivity({
     supabase,
     candidate_id: fields.candidate_id,
@@ -66,6 +83,9 @@ export async function createInterview(
       interviewer:    fields.interviewer,
     },
   });
+
+  // Deliver interview-scheduled emails (candidate + assigned interviewer)
+  await processEmailEvents(supabase);
 
   redirect("/dashboard/interviews");
 }

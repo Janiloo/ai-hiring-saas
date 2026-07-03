@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import type { CandidateWithJob } from "@/types/candidate";
-import { STAGE_ORDER, STAGE_META } from "@/types/candidate";
+import { STAGE_META } from "@/types/candidate";
 import type { ActionState } from "@/lib/actions/candidates";
 
 interface JobOption {
@@ -109,22 +109,21 @@ export default function CandidateForm({
           </select>
         </div>
 
-        {/* Stage */}
+        {/* Stage — read-only: pipeline changes go through the stage selector /
+            pipeline board, which enforce the state machine and role rules. */}
         <div>
-          <label className="label">
-            Stage <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="stage"
-            defaultValue={v("stage") || "applied"}
-            className="input"
-          >
-            {STAGE_ORDER.map((s) => (
-              <option key={s} value={s}>
-                {STAGE_META[s].label}
-              </option>
-            ))}
-          </select>
+          <label className="label">Stage</label>
+          <input
+            type="text"
+            readOnly
+            value={initial ? (STAGE_META[initial.stage]?.label ?? initial.stage) : "Applied"}
+            className="input cursor-not-allowed bg-gray-50 text-gray-500"
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            {initial
+              ? "Change the stage from the candidate page or pipeline board."
+              : "New candidates always start in Applied."}
+          </p>
         </div>
       </div>
 

@@ -4,8 +4,12 @@ import PageHeader from "@/components/PageHeader";
 import { InterviewStatusBadge, InterviewTypeBadge } from "@/components/interviews/InterviewStatusBadge";
 import DeleteInterviewButton from "@/components/interviews/DeleteInterviewButton";
 import CancelInterviewButton from "@/components/interviews/CancelInterviewButton";
-import { getInterviewById } from "@/lib/queries/interviews";
+import { getInterviewById, getInterviewReports } from "@/lib/queries/interviews";
 import { getUserOrganization } from "@/lib/queries/invitations";
+import InterviewReportForm from "@/components/interviews/InterviewReportForm";
+import { RECOMMENDATION_META, type InterviewReport, type ReportRecommendation } from "@/types/interview-report";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 
 interface PageProps { params: Promise<{ id: string }> }
 
@@ -22,14 +26,24 @@ function formatDateTime(iso: string) {
 
 export default async function InterviewDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [interview, orgResult] = await Promise.all([
+  const cookieStore = await cookies();
+  const supabase    = createClient(cookieStore);
+
+  const [interview, orgResult, reports, { data: { user } }] = await Promise.all([
     getInterviewById(id),
     getUserOrganization(),
+    getInterviewReports(id),
+    supabase.auth.getUser(),
   ]);
   if (!interview) notFound();
 
   const orgRole   = orgResult?.member.role ?? null;
   const canManage = orgRole === "admin" || orgRole === "recruiter";
+
+  const isAssignedInterviewer = user?.id != null && interview.interviewer_id === user.id;
+  const alreadyReported       = reports.some((r: InterviewReport) => r.interviewer_id === user?.id);
+  const showReportForm =
+    isAssignedInterviewer && !alreadyReported && interview.status !== "cancelled";
 
   return (
     <div className="flex flex-col gap-6 p-8 max-w-3xl">
@@ -118,6 +132,52 @@ export default async function InterviewDetailPage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* ── Interview report form — assigned interviewer only ─────────────── */}
+      {showReportForm && <InterviewReportForm interviewId={id} />}
+
+      {/* ── Submitted reports — evaluation data, visible to org members ───── */}
+      {reports.length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white">
+          <div className="border-b border-gray-100 px-5 py-3.5">
+            <h2 className="text-sm font-semibold text-gray-900">Interview Reports</h2>
+            <p className="mt-0.5 text-xs text-gray-400">
+              Evaluation feedback — pipeline decisions are made separately by recruiters and admins.
+            </p>
+          </div>
+          <ul className="divide-y divide-gray-100">
+            {(reports as InterviewReport[]).map((report) => {
+              const rec = RECOMMENDATION_META[report.recommendation as ReportRecommendation];
+              return (
+                <li key={report.id} className="flex flex-col gap-2 px-5 py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-yellow-400">
+                        {"★".repeat(report.rating)}
+                        <span className="text-gray-200">{"★".repeat(5 - report.rating)}</span>
+                      </span>
+                      <span className="text-xs text-gray-400">{report.rating}/5</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${rec?.color ?? ""}`}>
+                        {rec?.label ?? report.recommendation}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(report.created_at).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  {report.notes && (
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{report.notes}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

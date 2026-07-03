@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { JobPost } from "@/types/job-post";
 import { EXPERIENCE_OPTIONS } from "@/types/job-post";
 import type { ActionState } from "@/lib/actions/job-posts";
+import AIJobAdModal from "@/components/jobs/AIJobAdModal";
 
 interface JobPostFormProps {
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
@@ -18,11 +19,14 @@ export default function JobPostForm({ action, initial }: JobPostFormProps) {
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      {state?.error && (
+      {state && "error" in state && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 border border-red-100">
           {state.error}
         </div>
       )}
+
+      {/* After a successful create, show the AI Generated Job Posting modal */}
+      {state && "success" in state && <AIJobAdModal job={state.job} />}
 
       {/* Row 1 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

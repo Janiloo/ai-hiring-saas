@@ -28,9 +28,9 @@ const AI_RECOMMENDATION_META: Record<
   AIRecommendation,
   { label: string; color: string; icon: string }
 > = {
-  interview: { label: "Proceed to Interview", color: "text-emerald-700 bg-emerald-50 border-emerald-200", icon: "✓" },
-  review:    { label: "Needs Review",          color: "text-yellow-700 bg-yellow-50 border-yellow-200",   icon: "?" },
-  reject:    { label: "Not a Fit",             color: "text-red-600   bg-red-50    border-red-200",       icon: "✕" },
+  recommended:     { label: "Recommended",     color: "text-emerald-700 bg-emerald-50 border-emerald-200", icon: "✓" },
+  borderline:      { label: "Borderline",      color: "text-amber-700 bg-amber-50 border-amber-200",       icon: "?" },
+  not_recommended: { label: "Not Recommended", color: "text-red-600   bg-red-50    border-red-200",        icon: "✕" },
 };
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -78,12 +78,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   ]);
 
   const appliedViaLabel =
-    APPLIED_VIA_LABELS[(candidate as any).applied_via ?? "manual"] ?? "Manual Entry";
+    APPLIED_VIA_LABELS[candidate.applied_via ?? "manual"] ?? "Manual Entry";
 
-  const aiScore          = (candidate as any).ai_score          as number | null | undefined;
-  const aiRecommendation = (candidate as any).ai_recommendation as AIRecommendation | null | undefined;
-  const aiReason         = (candidate as any).ai_reason         as string | null | undefined;
-  const aiStatus         = (candidate as any).ai_status         as string | null | undefined;
+  const aiScore          = candidate.ai_score;
+  const aiRecommendation = candidate.ai_recommendation;
+  const aiReason         = candidate.ai_reason;
+  const aiStatus         = candidate.ai_status;
 
   const hasAiResult = aiStatus === "completed" && aiScore != null;
 
@@ -203,6 +203,75 @@ export default async function CandidateDetailPage({ params }: PageProps) {
               />
             </div>
           </SectionCard>
+
+          {/* AI Evaluation — read-only, generated during email ingestion */}
+          {candidate.ai_score !== null && candidate.ai_recommendation && (
+            <SectionCard title="AI Evaluation">
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Score */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-indigo-100 bg-indigo-50 text-lg font-bold text-indigo-700">
+                      {candidate.ai_score}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">AI Score</p>
+                      <p className="text-sm font-semibold text-gray-900">{candidate.ai_score} / 100</p>
+                    </div>
+                  </div>
+                  {/* Recommendation */}
+                  <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${AI_RECOMMENDATION_META[candidate.ai_recommendation].color}`}>
+                    {AI_RECOMMENDATION_META[candidate.ai_recommendation].label}
+                  </span>
+                </div>
+
+                {candidate.ai_summary && (
+                  <div>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Summary</p>
+                    <p className="text-sm leading-relaxed text-gray-700">{candidate.ai_summary}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {candidate.ai_strengths && candidate.ai_strengths.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">Strengths</p>
+                      <ul className="flex flex-col gap-1">
+                        {candidate.ai_strengths.map((item, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-sm text-gray-700">
+                            <span className="mt-0.5 text-emerald-500">+</span>{item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {candidate.ai_weaknesses && candidate.ai_weaknesses.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-red-500">Weaknesses</p>
+                      <ul className="flex flex-col gap-1">
+                        {candidate.ai_weaknesses.map((item, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-sm text-gray-700">
+                            <span className="mt-0.5 text-red-400">−</span>{item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {candidate.ai_reason && (
+                  <div>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">AI Reasoning</p>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-600">{candidate.ai_reason}</p>
+                  </div>
+                )}
+
+                <p className="border-t border-gray-100 pt-3 text-xs text-gray-400">
+                  AI evaluation is advisory only. Recruiters and admins make all workflow decisions.
+                </p>
+              </div>
+            </SectionCard>
+          )}
 
           {/* Notes */}
           {candidate.notes && (

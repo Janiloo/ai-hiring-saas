@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import Link from "next/link";
 import type { InterviewWithRelations, InterviewType, InterviewStatus } from "@/types/interview";
 import { INTERVIEW_TYPE_LABELS } from "@/types/interview";
+import InterviewerCombobox from "@/components/interviews/InterviewerCombobox";
+import type { InterviewerOption } from "@/lib/queries/interviews";
 
 type ActionState = { error: string } | null;
 
@@ -13,9 +15,10 @@ interface JobOption { id: string; title: string }
 interface InterviewFormProps {
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   initial?: InterviewWithRelations;
-  candidates: CandidateOption[];
-  jobs: JobOption[];
-  cancelHref: string;
+  candidates:   CandidateOption[];
+  jobs:         JobOption[];
+  interviewers: InterviewerOption[];
+  cancelHref:   string;
 }
 
 const INTERVIEW_TYPES: InterviewType[] = ["phone_screen", "video_call", "technical", "onsite", "panel", "final_round"];
@@ -28,7 +31,7 @@ function toDatetimeLocal(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function InterviewForm({ action, initial, candidates, jobs, cancelHref }: InterviewFormProps) {
+export default function InterviewForm({ action, initial, candidates, jobs, interviewers, cancelHref }: InterviewFormProps) {
   const [state, formAction, isPending] = useActionState(action, null);
 
   return (
@@ -75,15 +78,10 @@ export default function InterviewForm({ action, initial, candidates, jobs, cance
 
         {/* Interviewer */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="interviewer" className="label">Interviewer *</label>
-          <input
-            id="interviewer"
-            name="interviewer"
-            type="text"
-            required
+          <label className="label">Interviewer *</label>
+          <InterviewerCombobox
+            interviewers={interviewers}
             defaultValue={initial?.interviewer ?? ""}
-            placeholder="e.g. Jane Smith"
-            className="input"
           />
         </div>
 

@@ -17,6 +17,9 @@ export interface Organization {
   name:       string;
   created_by: string | null;
   created_at: string;
+  // Recruitment inbox settings (email ingestion)
+  recruitment_email?:     string | null;
+  gmail_connected_email?: string | null;
 }
 
 export interface OrgMember {
@@ -28,5 +31,6 @@ export interface OrgMember {
 }
 
 export interface OrgMemberWithUser extends OrgMember {
-  email?: string;
+  full_name: string;
+  email:     string;
 }

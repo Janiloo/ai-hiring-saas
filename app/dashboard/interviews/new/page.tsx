@@ -3,9 +3,14 @@ import InterviewForm from "@/components/interviews/InterviewForm";
 import { createInterview } from "@/lib/actions/interviews";
 import { getAllCandidates } from "@/lib/queries/candidates";
 import { getAllJobPosts } from "@/lib/queries/job-posts";
+import { getOrgInterviewers } from "@/lib/queries/interviews";
 
 export default async function NewInterviewPage() {
-  const [candidates, jobs] = await Promise.all([getAllCandidates(), getAllJobPosts()]);
+  const [candidates, jobs, interviewers] = await Promise.all([
+    getAllCandidates(),
+    getAllJobPosts(),
+    getOrgInterviewers(),
+  ]);
 
   return (
     <div className="flex flex-col gap-6 p-8 max-w-3xl">
@@ -15,6 +20,7 @@ export default async function NewInterviewPage() {
           action={createInterview}
           candidates={candidates}
           jobs={jobs}
+          interviewers={interviewers}
           cancelHref="/dashboard/interviews"
         />
       </div>

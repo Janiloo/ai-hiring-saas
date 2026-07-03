@@ -17,7 +17,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname              = usePathname();
-  const { user, orgRole, signOut } = useAuth();
+  const { user, orgRole, orgName, signOut } = useAuth();
 
   const displayName = user?.user_metadata?.full_name ?? user?.email ?? "User";
   const initials    = displayName
@@ -37,10 +37,12 @@ export default function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-          H
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+          {orgName ? orgName[0].toUpperCase() : "H"}
         </div>
-        <span className="text-base font-semibold text-gray-900">HireAI</span>
+        <span className="truncate text-base font-semibold text-gray-900">
+          {orgName ?? "HireAI"}
+        </span>
       </div>
 
       {/* Nav */}

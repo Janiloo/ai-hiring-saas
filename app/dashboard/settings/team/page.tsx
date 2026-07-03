@@ -5,7 +5,7 @@ import InviteForm from "@/components/invitations/InviteForm";
 import RevokeInviteButton from "@/components/invitations/RevokeInviteButton";
 import { getUserOrganization, getOrgMembers, getInvitationsByOrg } from "@/lib/queries/invitations";
 import { ensureOrganization } from "@/lib/actions/invitations";
-import { ORG_ROLE_META, type OrgRole, type Organization, type OrgMember } from "@/types/organization";
+import { ORG_ROLE_META, type OrgRole, type Organization, type OrgMember, type OrgMemberWithUser } from "@/types/organization";
 import { INVITATION_STATUS_META } from "@/types/invitation";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
@@ -71,7 +71,7 @@ export default async function TeamSettingsPage() {
   const isAdmin = member.role === "admin";
 
   const [members, invitations] = await Promise.all([
-    getOrgMembers(org.id),
+    getOrgMembers(org.id) as Promise<OrgMemberWithUser[]>,
     isAdmin ? getInvitationsByOrg(org.id) : Promise.resolve([]),
   ]);
 
@@ -118,20 +118,13 @@ export default async function TeamSettingsPage() {
                 <li key={m.id} className="flex items-center justify-between gap-4 px-5 py-3.5">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
-                      {m.user_id.slice(0, 2).toUpperCase()}
+                      {m.full_name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-gray-900">
-                        {isMe ? "You" : `Member ${m.user_id.slice(0, 8)}`}
+                        {isMe ? `${m.full_name} (You)` : m.full_name}
                       </p>
-                      <p className="text-xs text-gray-400">
-                        Joined{" "}
-                        {new Date(m.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day:   "numeric",
-                          year:  "numeric",
-                        })}
-                      </p>
+                      <p className="truncate text-xs text-gray-400">{m.email}</p>
                     </div>
                   </div>
                   <span

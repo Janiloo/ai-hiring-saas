@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { ensureOrganization } from "@/lib/actions/invitations";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next"); // explicit redirect target, if any
+  const code        = searchParams.get("code");
+  const next        = searchParams.get("next");
+  const companyName = searchParams.get("company_name"); // set by Create Workspace flow
 
   if (code) {
     const cookieStore = await cookies();
@@ -13,23 +15,27 @@ export async function GET(request: NextRequest) {
     const { error }   = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // ── Safety net ────────────────────────────────────────────────────────
-      // When the user arrives via a normal email confirmation (no explicit `next`),
-      // check if they have a pending invitation. This handles the case where
-      // someone registered, then confirmed their email, but never went back to
-      // the invite link to complete the acceptance.
-      if (!next) {
-        const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
-        if (user?.email) {
-          const { data: membership } = await supabase
-            .from("organization_members")
-            .select("id")
-            .eq("user_id", user.id)
-            .limit(1)
-            .maybeSingle();
+      if (user) {
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
 
-          if (!membership) {
+        if (!membership) {
+          // ── Create Workspace flow ────────────────────────────────────────
+          // company_name is set when the user confirmed from the register page.
+          if (companyName) {
+            await ensureOrganization(companyName);
+            return NextResponse.redirect(`${origin}${next ?? "/dashboard"}`);
+          }
+
+          // ── Invitation safety net ────────────────────────────────────────
+          // No org and no company_name — check for a pending invite to redirect to.
+          if (user.email) {
             const { data: invitation } = await supabase
               .from("invitations")
               .select("token")

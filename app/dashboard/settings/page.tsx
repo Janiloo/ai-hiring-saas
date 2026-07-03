@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrganization } from "@/lib/queries/invitations";
 import PageHeader from "@/components/PageHeader";
 import SectionHeader from "@/components/SectionHeader";
 import DeleteAccountButton from "@/components/settings/DeleteAccountButton";
+import RecruitmentSettings from "@/components/settings/RecruitmentSettings";
 import { ORG_ROLE_META, type OrgRole } from "@/types/organization";
 
 export default async function SettingsPage() {
@@ -24,6 +26,17 @@ export default async function SettingsPage() {
   const orgResult = await getUserOrganization();
   const orgRole   = (orgResult?.member.role ?? null) as OrgRole | null;
   const isAdmin   = orgRole === "admin";
+
+  // Recruitment settings (admin only)
+  let recruitment: { recruitment_email: string | null; gmail_connected_email: string | null } | null = null;
+  if (isAdmin && orgResult) {
+    const { data } = await supabase
+      .from("organizations")
+      .select("recruitment_email, gmail_connected_email")
+      .eq("id", orgResult.org.id)
+      .maybeSingle();
+    recruitment = data ?? { recruitment_email: null, gmail_connected_email: null };
+  }
   const roleMeta  = orgRole ? ORG_ROLE_META[orgRole] : null;
 
   return (
@@ -96,6 +109,19 @@ export default async function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Recruitment — admin only */}
+      {isAdmin && recruitment && (
+        <section>
+          <SectionHeader title="Recruitment" />
+          <Suspense>
+            <RecruitmentSettings
+              recruitmentEmail={recruitment.recruitment_email}
+              gmailConnectedEmail={recruitment.gmail_connected_email}
+            />
+          </Suspense>
+        </section>
+      )}
 
       {/* Team Management — admin only */}
       {isAdmin && (

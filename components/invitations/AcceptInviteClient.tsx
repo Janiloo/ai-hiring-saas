@@ -25,23 +25,17 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
     null
   );
 
-  // Registration form state
-  const [fullName,         setFullName]         = useState("");
-  const [password,         setPassword]         = useState("");
-  const [confirmPassword,  setConfirmPassword]  = useState("");
-  const [regError,         setRegError]         = useState<string | null>(null);
-  const [regLoading,       setRegLoading]       = useState(false);
-  const [checkEmail,       setCheckEmail]       = useState(false);
+  const [fullName,        setFullName]        = useState("");
+  const [password,        setPassword]        = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [regError,        setRegError]        = useState<string | null>(null);
+  const [regLoading,      setRegLoading]      = useState(false);
+  const [checkEmail,      setCheckEmail]      = useState(false);
 
-  // Hidden accept form — submitted automatically once the user is authenticated
   const acceptFormRef = useRef<HTMLFormElement>(null);
 
-  // Auto-submit the accept action whenever the authenticated user's email
-  // matches the invitation. This covers two paths:
-  //   1. New registration: signUp() returned a session immediately → auth
-  //      context updated → this effect fires.
-  //   2. Existing account: user clicked "Sign in to accept", logged in on the
-  //      login page, then was redirected back here → this effect fires.
+  // Auto-submit accept action once the authenticated user's email matches the invite.
+  // Covers: immediate sign-up (email confirmation OFF) and returning after confirming.
   useEffect(() => {
     if (
       !loading &&
@@ -115,15 +109,15 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
         <p className="text-sm text-gray-500">
           We sent a confirmation link to{" "}
           <span className="font-medium text-gray-700">{invitation.email}</span>.
-          Click it to activate your account — you'll be brought back here
-          automatically to complete joining{" "}
+          Click it to activate your account — you&apos;ll be brought back here
+          automatically to finish joining{" "}
           <span className="font-medium text-gray-700">{invitation.org_name}</span>.
         </p>
       </div>
     );
   }
 
-  // ── Not logged in — inline registration form ──────────────────────────────
+  // ── Not logged in — Join Workspace form ──────────────────────────────────
   if (!user) {
     async function handleRegister(e: React.FormEvent) {
       e.preventDefault();
@@ -141,7 +135,6 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
         password,
         options: {
           data: { full_name: fullName },
-          // If email confirmation is ON, bring the user back here after confirming
           emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
             `/accept-invite?token=${token}`
           )}`,
@@ -155,14 +148,10 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
       }
 
       if (data.session) {
-        // Email confirmation is OFF — user is signed in immediately.
-        // The useEffect above will fire once AuthContext picks up the new user
-        // and auto-submit the accept form. Keep regLoading=true so the spinner
-        // stays visible until the server action completes and redirects.
+        // Signed in immediately — useEffect fires and auto-submits accept form.
         return;
       }
 
-      // Email confirmation is ON — show the "check your email" screen.
       setRegLoading(false);
       setCheckEmail(true);
     }
@@ -171,26 +160,34 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
       <div className="flex flex-col gap-5">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900">You've been invited!</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Join Workspace</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Create your account to join{" "}
-            <span className="font-medium text-gray-800">{invitation.org_name}</span>{" "}
-            as{" "}
-            <span
-              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${roleMeta?.color ?? ""}`}
-            >
-              {roleMeta?.label ?? invitation.role}
-            </span>
+            You&apos;ve been invited to join a workspace on HireAI
           </p>
         </div>
 
-        {/* Registration form */}
+        {/* Workspace context — read-only */}
+        <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500">Company</span>
+            <span className="text-sm font-semibold text-gray-900">{invitation.org_name}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500">Your Role</span>
+            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${roleMeta?.color ?? ""}`}>
+              {roleMeta?.label ?? invitation.role}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500">Invited Email</span>
+            <span className="text-sm text-gray-700">{invitation.email}</span>
+          </div>
+        </div>
+
+        {/* Name + password only — org/role/email come from the invitation */}
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
-          {/* Full Name */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
-              Full Name
-            </label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Full Name</label>
             <input
               type="text"
               required
@@ -201,27 +198,8 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
             />
           </div>
 
-          {/* Email — pre-filled and locked to the invitation address */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              readOnly
-              value={invitation.email}
-              className="w-full cursor-not-allowed rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 text-sm text-gray-500"
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Locked to your invitation address.
-            </p>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
-              Password
-            </label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Password</label>
             <input
               type="password"
               required
@@ -233,11 +211,8 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
             />
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
-              Confirm Password
-            </label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Confirm Password</label>
             <input
               type="password"
               required
@@ -260,9 +235,7 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
             disabled={regLoading}
             className="mt-1 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
           >
-            {regLoading
-              ? "Creating account…"
-              : `Create Account & Join ${invitation.org_name}`}
+            {regLoading ? "Creating account…" : `Join ${invitation.org_name}`}
           </button>
         </form>
 
@@ -276,7 +249,7 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
           </Link>
         </p>
 
-        {/* Hidden form auto-submitted by the useEffect once the user is signed in */}
+        {/* Hidden form auto-submitted by useEffect once the user is signed in */}
         <form ref={acceptFormRef} action={acceptAction} style={{ display: "none" }}>
           <input type="hidden" name="token" value={token} />
         </form>
@@ -295,7 +268,7 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
         <p className="text-sm text-gray-500">
           This invitation was sent to{" "}
           <span className="font-medium text-gray-800">{invitation.email}</span>,
-          but you're signed in as{" "}
+          but you&apos;re signed in as{" "}
           <span className="font-medium text-gray-800">{user.email}</span>.
         </p>
         <p className="text-sm text-gray-500">
@@ -306,24 +279,18 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
   }
 
   // ── Logged in, correct email — auto-completing ────────────────────────────
-  // The useEffect at the top already triggered acceptFormRef.requestSubmit().
-  // Show a loading state while the server action runs.
   return (
     <div className="flex flex-col items-center gap-4 py-8 text-center">
       <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
       <p className="text-sm font-medium text-gray-700">
-        {isPending || !state?.error
-          ? `Completing your invitation to ${invitation.org_name}…`
-          : ""}
+        {isPending || !state?.error ? `Joining ${invitation.org_name}…` : ""}
       </p>
 
-      {/* Error from the accept action */}
       {state?.error && (
         <div className="flex flex-col items-center gap-3">
           <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
             {state.error}
           </p>
-          {/* Manual fallback in case auto-submit failed */}
           <form action={acceptAction}>
             <input type="hidden" name="token" value={token} />
             <button
@@ -337,7 +304,6 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
         </div>
       )}
 
-      {/* Hidden form triggered by useEffect */}
       <form ref={acceptFormRef} action={acceptAction} style={{ display: "none" }}>
         <input type="hidden" name="token" value={token} />
       </form>

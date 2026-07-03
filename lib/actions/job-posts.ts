@@ -6,7 +6,12 @@ import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
 import { type JobPostInsert, type EmploymentType, type JobStatus } from "@/types/job-post";
 
-export type ActionState = { error: string } | null;
+export type ActionState =
+  | { error: string }
+  // Returned by createJobPost so the UI can show the AI Generated Job Posting
+  // modal instead of redirecting immediately.
+  | { success: true; job: JobPostInsert }
+  | null;
 
 function parseFormData(formData: FormData): JobPostInsert {
   const skillsRaw = (formData.get("required_skills") as string) ?? "";
@@ -55,7 +60,9 @@ export async function createJobPost(
 
   if (error) return { error: error.message };
 
-  redirect("/dashboard/jobs");
+  // No redirect — the form shows the AI Generated Job Posting modal,
+  // which navigates back to /dashboard/jobs when closed.
+  return { success: true, job: payload };
 }
 
 export async function updateJobPost(

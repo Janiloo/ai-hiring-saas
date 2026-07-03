@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import type { Invitation, InvitationPublic } from "@/types/invitation";
-import type { Organization, OrgMember } from "@/types/organization";
+import type { Organization, OrgMember, OrgMemberWithUser } from "@/types/organization";
 
 /**
  * Looks up an invitation by token using a SECURITY DEFINER function so it works
@@ -84,17 +84,15 @@ export async function getUserOrganization(): Promise<{
   };
 }
 
-/** Returns all members of the given org (RLS: org members only). */
-export async function getOrgMembers(organizationId: string): Promise<OrgMember[]> {
+/** Returns all members of the given org with their full name and email. */
+export async function getOrgMembers(organizationId: string): Promise<OrgMemberWithUser[]> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data, error } = await supabase
-    .from("organization_members")
-    .select("*")
-    .eq("organization_id", organizationId)
-    .order("created_at", { ascending: true });
+  const { data, error } = await supabase.rpc("get_org_members_with_profiles", {
+    p_org_id: organizationId,
+  });
 
   if (error || !data) return [];
-  return data as OrgMember[];
+  return data as OrgMemberWithUser[];
 }

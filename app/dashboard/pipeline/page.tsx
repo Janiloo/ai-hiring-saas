@@ -5,14 +5,13 @@ import { getCandidatesGroupedByStage } from "@/lib/queries/pipeline";
 import { STAGE_ORDER, STAGE_META } from "@/types/candidate";
 
 const COLUMN_COLORS: Record<string, string> = {
-  applied:              "border-t-blue-400",
-  screening:            "border-t-yellow-400",
-  shortlisted:          "border-t-indigo-400",
-  interview_scheduled:  "border-t-purple-400",
-  interview_completed:  "border-t-orange-400",
-  offer_sent:           "border-t-teal-400",
-  hired:                "border-t-emerald-400",
-  rejected:             "border-t-red-400",
+  applied:     "border-t-blue-400",
+  screening:   "border-t-yellow-400",
+  shortlisted: "border-t-indigo-400",
+  interview:   "border-t-purple-400",
+  decision:    "border-t-teal-400",
+  hired:       "border-t-emerald-400",
+  rejected:    "border-t-red-400",
 };
 
 export default async function PipelinePage() {

@@ -5,8 +5,15 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
-import { type CandidateInsert, type CandidateStage, STAGE_META } from "@/types/candidate";
+import {
+  type CandidateInsert,
+  type CandidateStage,
+  STAGE_META,
+  STAGE_TRANSITIONS,
+  ADMIN_ONLY_TARGET_STAGES,
+} from "@/types/candidate";
 import { logActivity } from "@/lib/utils/log-activity";
+import { processEmailEvents } from "@/lib/utils/email-events";
 
 export type ActionState = { error: string } | null;
 
@@ -59,6 +66,9 @@ export async function createCandidate(
     metadata:     { stage: payload.stage ?? "applied" },
   });
 
+  // Deliver "application received" / "new candidate" emails (DB trigger enqueued them)
+  await processEmailEvents(supabase);
+
   redirect("/dashboard/candidates");
 }
 
@@ -77,7 +87,9 @@ export async function updateCandidate(
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot edit candidates." };
 
-  const payload = parseFormData(formData);
+  // Pipeline stage changes go ONLY through updateCandidateStage (state
+  // machine + role enforcement) — strip stage from general edits.
+  const { stage: _ignored, ...payload } = parseFormData(formData);
 
   // RLS enforces: admin or recruiter in same org can update
   const { error } = await supabase
@@ -124,6 +136,7 @@ export async function updateCandidateStage(
 
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
+  // Interviewers NEVER modify pipeline — evaluation only.
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot change candidate stages." };
 
   const { data: current } = await supabase
@@ -132,12 +145,32 @@ export async function updateCandidateStage(
     .eq("id", id)
     .single();
 
+  if (!current) return { error: "Candidate not found." };
+
+  const fromStage = current.stage as CandidateStage;
+
+  // ── State machine enforcement ─────────────────────────────────────────────
+  if (!STAGE_TRANSITIONS[fromStage]?.includes(stage)) {
+    return {
+      error: `Invalid transition: ${STAGE_META[fromStage]?.label ?? fromStage} → ${STAGE_META[stage]?.label ?? stage}.`,
+    };
+  }
+
+  // Final authority: only admins can move candidates to Hired or Rejected.
+  if (ADMIN_ONLY_TARGET_STAGES.includes(stage) && membership.orgRole !== "admin") {
+    return { error: `Only admins can move candidates to ${STAGE_META[stage].label}.` };
+  }
+
   const { error } = await supabase
     .from("candidates")
     .update({ stage })
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  // Audit logging is enforced by the DB trigger (trg_audit_candidate_stage).
+  // Deliver any email events the trigger enqueued.
+  await processEmailEvents(supabase);
 
   await logActivity({
     supabase,

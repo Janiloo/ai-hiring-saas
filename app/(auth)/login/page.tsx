@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
-export default function LoginPage() {
+function LoginContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const supabase     = createClient();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
@@ -54,7 +54,9 @@ export default function LoginPage() {
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <label className="text-xs font-medium text-gray-700">Password</label>
-            <Link href="/forgot-password" className="text-xs text-indigo-600 hover:underline">Forgot password?</Link>
+            <Link href="/forgot-password" className="text-xs text-indigo-600 hover:underline">
+              Forgot password?
+            </Link>
           </div>
           <input
             type="password"
@@ -82,11 +84,20 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-xs text-gray-500">
-        Don&apos;t have an account?{" "}
+        Don&apos;t have a workspace?{" "}
         <Link href="/register" className="font-medium text-indigo-600 hover:underline">
-          Create one
+          Create Workspace
         </Link>
       </p>
     </div>
+  );
+}
+
+// useSearchParams requires a Suspense boundary for static prerendering
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

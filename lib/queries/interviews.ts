@@ -2,6 +2,37 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { type InterviewWithRelations, type InterviewFilters, ITEMS_PER_PAGE } from "@/types/interview";
 
+export interface InterviewerOption {
+  user_id:   string;
+  full_name: string;
+  email:     string;
+}
+
+/** Returns all org members with role = interviewer, with name + email from auth. */
+export async function getOrgInterviewers(): Promise<InterviewerOption[]> {
+  const cookieStore = await cookies();
+  const supabase    = createClient(cookieStore);
+
+  // Get current user's org
+  const { data: membership } = await supabase
+    .from("organization_members")
+    .select("organization_id")
+    .limit(1)
+    .maybeSingle();
+
+  if (!membership) return [];
+
+  const { data, error } = await supabase.rpc("get_org_members_with_profiles", {
+    p_org_id: membership.organization_id,
+  });
+
+  if (error || !data) return [];
+
+  return (data as Array<{ user_id: string; role: string; full_name: string; email: string }>)
+    .filter((m) => m.role === "interviewer")
+    .map((m) => ({ user_id: m.user_id, full_name: m.full_name, email: m.email }));
+}
+
 export async function getInterviews(filters: InterviewFilters = {}) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -43,6 +74,20 @@ export async function getInterviewById(id: string): Promise<InterviewWithRelatio
 
   if (error) return null;
   return data as InterviewWithRelations;
+}
+
+export async function getInterviewReports(interviewId: string) {
+  const cookieStore = await cookies();
+  const supabase    = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from("interview_reports")
+    .select("*")
+    .eq("interview_id", interviewId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) return [];
+  return data;
 }
 
 export async function getUpcomingInterviews(limit = 5): Promise<InterviewWithRelations[]> {

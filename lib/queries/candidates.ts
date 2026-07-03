@@ -16,7 +16,7 @@ export interface CandidatesResult {
 export async function getCandidates(
   filters: CandidateFilters = {}
 ): Promise<CandidatesResult> {
-  const { query, stage, job_post_id, page = 1 } = filters;
+  const { query, stage, job_post_id, ai, page = 1 } = filters;
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -39,6 +39,10 @@ export async function getCandidates(
 
   if (job_post_id && job_post_id !== "all") {
     builder = builder.eq("job_post_id", job_post_id);
+  }
+
+  if (ai && ai !== "all") {
+    builder = builder.eq("ai_recommendation", ai);
   }
 
   const { data, count, error } = await builder;
