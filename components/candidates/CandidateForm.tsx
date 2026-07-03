@@ -80,16 +80,29 @@ export default function CandidateForm({
           />
         </div>
 
-        {/* Resume URL */}
+        {/* Resume (PDF) */}
         <div className="sm:col-span-2">
-          <label className="label">Resume URL</label>
+          <label className="label">Resume (PDF)</label>
           <input
-            name="resume_url"
-            type="url"
-            defaultValue={v("resume_url")}
-            placeholder="https://drive.google.com/…"
-            className="input"
+            name="resume_file"
+            type="file"
+            accept=".pdf,application/pdf"
+            className="input file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-600 hover:file:bg-indigo-100"
           />
+          {initial?.resume_url && (
+            <p className="mt-1 text-xs text-gray-500">
+              Current resume:{" "}
+              <a
+                href={initial.resume_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:underline"
+              >
+                View PDF ↗
+              </a>
+              {" "}— upload a new file to replace it.
+            </p>
+          )}
         </div>
 
         {/* Assign to Job */}

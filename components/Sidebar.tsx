@@ -3,21 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { ORG_ROLE_META, type OrgRole } from "@/types/organization";
+import Icon, { type IconName } from "@/components/ui/Icon";
 
-const NAV_ITEMS = [
-  { label: "Dashboard",  href: "/dashboard",            icon: "⬛", roles: ["admin", "recruiter", "interviewer"] },
-  { label: "Candidates", href: "/dashboard/candidates", icon: "👤", roles: ["admin", "recruiter", "interviewer"] },
-  { label: "Pipeline",   href: "/dashboard/pipeline",   icon: "🔀", roles: ["admin", "recruiter", "interviewer"] },
-  { label: "Job Posts",  href: "/dashboard/jobs",       icon: "📋", roles: ["admin", "recruiter", "interviewer"] },
-  { label: "Interviews", href: "/dashboard/interviews", icon: "🗓", roles: ["admin", "recruiter", "interviewer"] },
-  { label: "Reports",    href: "/dashboard/reports",    icon: "📊", roles: ["admin", "recruiter"] },
-  { label: "Settings",   href: "/dashboard/settings",   icon: "⚙️", roles: ["admin", "recruiter", "interviewer"] },
-] as const;
+const NAV_ITEMS: {
+  label: string;
+  href: string;
+  icon: IconName;
+  roles: readonly OrgRole[];
+}[] = [
+  { label: "Dashboard",  href: "/dashboard",            icon: "dashboard", roles: ["admin", "recruiter", "interviewer"] },
+  { label: "Candidates", href: "/dashboard/candidates", icon: "users",     roles: ["admin", "recruiter", "interviewer"] },
+  { label: "Pipeline",   href: "/dashboard/pipeline",   icon: "pipeline",  roles: ["admin", "recruiter", "interviewer"] },
+  { label: "Job Posts",  href: "/dashboard/jobs",       icon: "briefcase", roles: ["admin", "recruiter", "interviewer"] },
+  { label: "Interviews", href: "/dashboard/interviews", icon: "calendar",  roles: ["admin", "recruiter", "interviewer"] },
+  { label: "Reports",    href: "/dashboard/reports",    icon: "chart",     roles: ["admin", "recruiter"] },
+  { label: "Settings",   href: "/dashboard/settings",   icon: "settings",  roles: ["admin", "recruiter", "interviewer"] },
+];
 
 export default function Sidebar() {
   const pathname              = usePathname();
-  const { user, orgRole, orgName, signOut } = useAuth();
+  const { user, orgRole, orgName, orgLogoUrl, signOut } = useAuth();
+  const { theme, toggle } = useTheme();
 
   const displayName = user?.user_metadata?.full_name ?? user?.email ?? "User";
   const initials    = displayName
@@ -37,9 +45,17 @@ export default function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-          {orgName ? orgName[0].toUpperCase() : "H"}
-        </div>
+        {orgLogoUrl ? (
+          <img
+            src={orgLogoUrl}
+            alt={orgName ?? "Organization"}
+            className="h-8 w-8 shrink-0 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+            {orgName ? orgName[0].toUpperCase() : "H"}
+          </div>
+        )}
         <span className="truncate text-base font-semibold text-gray-900">
           {orgName ?? "HireAI"}
         </span>
@@ -59,7 +75,11 @@ export default function Sidebar() {
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
-              <span className="text-base leading-none">{item.icon}</span>
+              <Icon
+                name={item.icon}
+                size={18}
+                className={active ? "text-indigo-600" : "text-gray-400"}
+              />
               {item.label}
             </Link>
           );
@@ -82,6 +102,14 @@ export default function Sidebar() {
               )}
             </div>
           </div>
+          <button
+            onClick={toggle}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="shrink-0 rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+          >
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+          </button>
           <button
             onClick={signOut}
             title="Sign out"

@@ -1,23 +1,47 @@
+import Icon, { type IconName } from "@/components/ui/Icon";
+
 interface StatCardProps {
   label: string;
   value: string | number;
+  /** Named line icon (preferred) or an emoji/string (legacy fallback). */
+  icon?: IconName | string;
+  /** Muted descriptor line, e.g. "Active listings". */
+  hint?: string;
+  /** Legacy alias for `hint`. */
   change?: string;
+  /** Legacy prop, retained for compatibility. No longer drives color. */
   positive?: boolean;
-  icon: string;
 }
 
-export default function StatCard({ label, value, change, positive, icon }: StatCardProps) {
+const KNOWN_ICONS: IconName[] = [
+  "users", "briefcase", "calendar", "check-circle",
+  "chevron-right", "user-plus", "calendar-plus", "arrow-right",
+];
+
+function isIconName(v: string): v is IconName {
+  return (KNOWN_ICONS as string[]).includes(v);
+}
+
+export default function StatCard({ label, value, icon, hint, change }: StatCardProps) {
+  const descriptor = hint ?? change;
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <span className="text-xl">{icon}</span>
+    <div className="card card-pad transition-shadow hover:shadow-md">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-500">{label}</p>
+          <p className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">{value}</p>
+        </div>
+        {icon && (
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            {typeof icon === "string" && isIconName(icon)
+              ? <Icon name={icon} size={20} />
+              : <span className="text-lg leading-none">{icon}</span>}
+          </span>
+        )}
       </div>
-      <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-      {change && (
-        <p className={`mt-1 text-xs font-medium ${positive ? "text-emerald-600" : "text-red-500"}`}>
-          {change}
-        </p>
+      {descriptor && (
+        <p className="mt-3 text-xs font-medium text-gray-400">{descriptor}</p>
       )}
     </div>
   );

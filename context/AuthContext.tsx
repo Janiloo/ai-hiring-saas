@@ -7,36 +7,39 @@ import { useRouter } from "next/navigation";
 import type { OrgRole } from "@/types/organization";
 
 interface AuthContextValue {
-  user:    User | null;
-  orgRole: OrgRole | null;
-  orgId:   string | null;
-  orgName: string | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
+  user:       User | null;
+  orgRole:    OrgRole | null;
+  orgId:      string | null;
+  orgName:    string | null;
+  orgLogoUrl: string | null;
+  loading:    boolean;
+  signOut:    () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
-  user:    null,
-  orgRole: null,
-  orgId:   null,
-  orgName: null,
-  loading: true,
-  signOut: async () => {},
+  user:       null,
+  orgRole:    null,
+  orgId:      null,
+  orgName:    null,
+  orgLogoUrl: null,
+  loading:    true,
+  signOut:    async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user,    setUser]    = useState<User | null>(null);
   const [orgRole, setOrgRole] = useState<OrgRole | null>(null);
   const [orgId,   setOrgId]   = useState<string | null>(null);
-  const [orgName, setOrgName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [orgName,    setOrgName]    = useState<string | null>(null);
+  const [orgLogoUrl, setOrgLogoUrl] = useState<string | null>(null);
+  const [loading,    setLoading]    = useState(true);
   const router   = useRouter();
   const supabase = createClient();
 
   async function loadOrgMembership(uid: string) {
     const { data } = await supabase
       .from("organization_members")
-      .select("organization_id, role, organizations(name)")
+      .select("organization_id, role, organizations(name, logo_url)")
       .eq("user_id", uid)
       .limit(1)
       .maybeSingle();
@@ -45,9 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOrgId(data?.organization_id ?? null);
 
     const org = Array.isArray(data?.organizations)
-      ? (data.organizations[0] as { name: string } | undefined)
-      : (data?.organizations as { name: string } | null | undefined);
+      ? (data.organizations[0] as { name: string; logo_url: string | null } | undefined)
+      : (data?.organizations as { name: string; logo_url: string | null } | null | undefined);
     setOrgName(org?.name ?? null);
+    setOrgLogoUrl(org?.logo_url ?? null);
   }
 
   useEffect(() => {
@@ -75,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setOrgRole(null);
           setOrgId(null);
           setOrgName(null);
+          setOrgLogoUrl(null);
         }
       }
     );
@@ -88,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, orgRole, orgId, orgName, loading, signOut }}>
+    <AuthContext.Provider value={{ user, orgRole, orgId, orgName, orgLogoUrl, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

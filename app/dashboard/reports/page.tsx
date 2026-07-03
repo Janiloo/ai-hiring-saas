@@ -1,6 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import SectionHeader from "@/components/SectionHeader";
 import StatCard from "@/components/StatCard";
+import type { IconName } from "@/components/ui/Icon";
 import { getDashboardData } from "@/lib/queries/dashboard";
 import { STAGE_ORDER, STAGE_META } from "@/types/candidate";
 
@@ -9,11 +10,11 @@ export default async function ReportsPage() {
 
   const total = stats.totalCandidates;
 
-  const reportStats = [
-    { label: "Total Candidates", value: total,                icon: "👥", change: "All time",     positive: true },
-    { label: "Open Jobs",        value: stats.openJobs,       icon: "📋", change: "Active",       positive: true },
-    { label: "Hired This Month", value: stats.hiredThisMonth, icon: "✅", change: "Current month", positive: true },
-    { label: "Interviews Today", value: stats.interviewsToday,icon: "🗓", change: "Scheduled",    positive: true },
+  const reportStats: { label: string; value: number; icon: IconName; hint: string }[] = [
+    { label: "Total Candidates", value: total,                 icon: "users",        hint: "All time" },
+    { label: "Open Jobs",        value: stats.openJobs,        icon: "briefcase",    hint: "Active" },
+    { label: "Hired This Month", value: stats.hiredThisMonth,  icon: "check-circle", hint: "Current month" },
+    { label: "Interviews Today", value: stats.interviewsToday, icon: "calendar",     hint: "Scheduled" },
   ];
 
   return (

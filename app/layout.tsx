@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,19 +20,27 @@ export const metadata: Metadata = {
   description: "Streamline your hiring pipeline with AI scoring and automation.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Theme is persisted in a cookie so the server can render the correct
+  // <html class> — no flash of the wrong theme, no client init script.
+  const cookieStore = await cookies();
+  const isDark = cookieStore.get("theme")?.value === "dark";
+
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased ${isDark ? "dark" : ""}`}
     >
       <body className="min-h-full flex flex-col">
+        <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>
-        </body>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

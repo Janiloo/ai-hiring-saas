@@ -79,14 +79,14 @@ export default function JobPostForm({ action, initial }: JobPostFormProps) {
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">$</span>
             <input name="salary_min" type="number" min="0" defaultValue={initial?.salary_min ?? ""}
               placeholder="Min"
-              className="input pl-7" />
+              className="input !pl-10" />
           </div>
           <span className="text-gray-400">–</span>
           <div className="relative flex-1">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">$</span>
             <input name="salary_max" type="number" min="0" defaultValue={initial?.salary_max ?? ""}
               placeholder="Max"
-              className="input pl-7" />
+              className="input !pl-10" />
           </div>
         </div>
       </div>

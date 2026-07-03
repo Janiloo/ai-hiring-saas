@@ -12,6 +12,7 @@ import {
   STAGE_TRANSITIONS,
   ADMIN_ONLY_TARGET_STAGES,
 } from "@/types/candidate";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { logActivity } from "@/lib/utils/log-activity";
 import { processEmailEvents } from "@/lib/utils/email-events";
 
@@ -25,10 +26,35 @@ function parseFormData(formData: FormData): CandidateInsert {
     full_name:   (formData.get("full_name") as string).trim(),
     email:       (formData.get("email") as string).trim().toLowerCase(),
     phone:       (formData.get("phone") as string)?.trim() || null,
-    resume_url:  (formData.get("resume_url") as string)?.trim() || null,
+    resume_url:  null,
     stage:       (formData.get("stage") as CandidateStage) ?? "applied",
     notes:       (formData.get("notes") as string)?.trim() || null,
   };
+}
+
+async function uploadResume(
+  file: File,
+  organizationId: string
+): Promise<{ url: string } | { error: string }> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const admin       = createServiceClient(supabaseUrl, serviceKey);
+
+  const ext  = "pdf";
+  const path = `${organizationId}/${crypto.randomUUID()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const { error } = await admin.storage
+    .from("resumes")
+    .upload(path, buffer, { contentType: "application/pdf", upsert: false });
+
+  if (error) return { error: error.message };
+
+  const { data: { publicUrl } } = admin.storage
+    .from("resumes")
+    .getPublicUrl(path);
+
+  return { url: publicUrl };
 }
 
 export async function createCandidate(
@@ -47,6 +73,15 @@ export async function createCandidate(
 
   const { orgId: organization_id } = membership;
   const payload = parseFormData(formData);
+
+  const file = formData.get("resume_file") as File | null;
+  if (file && file.size > 0) {
+    if (file.type !== "application/pdf") return { error: "Only PDF files are allowed." };
+    if (file.size > 10 * 1024 * 1024) return { error: "Resume must be under 10 MB." };
+    const result = await uploadResume(file, organization_id);
+    if ("error" in result) return { error: result.error };
+    payload.resume_url = result.url;
+  }
 
   const { data: created, error } = await supabase
     .from("candidates")
@@ -90,6 +125,15 @@ export async function updateCandidate(
   // Pipeline stage changes go ONLY through updateCandidateStage (state
   // machine + role enforcement) — strip stage from general edits.
   const { stage: _ignored, ...payload } = parseFormData(formData);
+
+  const file = formData.get("resume_file") as File | null;
+  if (file && file.size > 0) {
+    if (file.type !== "application/pdf") return { error: "Only PDF files are allowed." };
+    if (file.size > 10 * 1024 * 1024) return { error: "Resume must be under 10 MB." };
+    const result = await uploadResume(file, membership.orgId);
+    if ("error" in result) return { error: result.error };
+    payload.resume_url = result.url;
+  }
 
   // RLS enforces: admin or recruiter in same org can update
   const { error } = await supabase

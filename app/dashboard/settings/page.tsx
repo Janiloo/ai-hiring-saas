@@ -7,6 +7,7 @@ import PageHeader from "@/components/PageHeader";
 import SectionHeader from "@/components/SectionHeader";
 import DeleteAccountButton from "@/components/settings/DeleteAccountButton";
 import RecruitmentSettings from "@/components/settings/RecruitmentSettings";
+import OrgProfileSettings from "@/components/settings/OrgProfileSettings";
 import { ORG_ROLE_META, type OrgRole } from "@/types/organization";
 
 export default async function SettingsPage() {
@@ -27,15 +28,22 @@ export default async function SettingsPage() {
   const orgRole   = (orgResult?.member.role ?? null) as OrgRole | null;
   const isAdmin   = orgRole === "admin";
 
-  // Recruitment settings (admin only)
+  // Org details (logo, recruitment settings)
+  let orgLogoUrl: string | null = null;
   let recruitment: { recruitment_email: string | null; gmail_connected_email: string | null } | null = null;
-  if (isAdmin && orgResult) {
+  if (orgResult) {
     const { data } = await supabase
       .from("organizations")
-      .select("recruitment_email, gmail_connected_email")
+      .select("logo_url, recruitment_email, gmail_connected_email")
       .eq("id", orgResult.org.id)
       .maybeSingle();
-    recruitment = data ?? { recruitment_email: null, gmail_connected_email: null };
+    orgLogoUrl = data?.logo_url ?? null;
+    if (isAdmin) {
+      recruitment = {
+        recruitment_email: data?.recruitment_email ?? null,
+        gmail_connected_email: data?.gmail_connected_email ?? null,
+      };
+    }
   }
   const roleMeta  = orgRole ? ORG_ROLE_META[orgRole] : null;
 
@@ -84,6 +92,18 @@ export default async function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Organization */}
+      {orgResult && (
+        <section>
+          <SectionHeader title="Organization" />
+          <OrgProfileSettings
+            orgName={orgResult.org.name}
+            logoUrl={orgLogoUrl}
+            isAdmin={isAdmin}
+          />
+        </section>
+      )}
 
       {/* Notifications */}
       <section>

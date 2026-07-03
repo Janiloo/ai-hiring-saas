@@ -1,36 +1,162 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   Design System — AI Hiring SaaS (enterprise ATS)
+   Tokens + reusable component primitives. Consumed app-wide.
+   Neutral = slate/gray, Brand = indigo. Calm, dense, professional.
+   ============================================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #f8fafc;   /* slate-50 — app canvas */
+  --surface:    #ffffff;   /* cards, panels */
+  --foreground: #0f172a;   /* slate-900 — primary text */
+
+  /* Brand */
+  --brand:        #4f46e5; /* indigo-600 */
+  --brand-hover:  #4338ca; /* indigo-700 */
+  --brand-subtle: #eef2ff; /* indigo-50 */
+
+  /* Radius scale */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Elevation — soft, low-contrast for enterprise calm */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 12px 32px -8px rgb(15 23 42 / 0.14);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Class-based dark mode (toggled via <html class="dark">) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ----------------------------------------------------------------------------
+   Dark theme. Tailwind v4 exposes its palette as CSS variables (bg-gray-200 →
+   var(--color-gray-200)), so remapping the neutral scale here flips text,
+   borders, gray backgrounds, hover states, and dividers app-wide without
+   touching every component. Accent colors (indigo/red/emerald) are left intact.
+   ---------------------------------------------------------------------------- */
+/* :root.dark (0,2,0) outranks Tailwind's generated :root theme block, which
+   otherwise wins on source order at equal specificity. */
+:root.dark {
+  --background: #0b1120;   /* app canvas */
+  --surface:    #1e293b;   /* cards, panels */
+  --foreground: #e2e8f0;
+
+  --brand-subtle: #312e81; /* indigo-900-ish */
+
+  /* Neutral scale inverted for dark surfaces */
+  --color-gray-50:  #0f172a;
+  --color-gray-100: #1e293b;
+  --color-gray-200: #334155;
+  --color-gray-300: #475569;
+  --color-gray-400: #64748b;
+  --color-gray-500: #94a3b8;
+  --color-gray-600: #b6c2d4;
+  --color-gray-700: #cbd5e1;
+  --color-gray-800: #e2e8f0;
+  --color-gray-900: #f1f5f9;
+}
+
+/* White surfaces → dark panel color (cards, inputs, sidebar, modals). */
+.dark .bg-white {
+  background-color: var(--surface);
+}
+/* Soften elevation on dark — heavy shadows read as muddy halos. */
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg {
+  --tw-shadow-color: rgb(0 0 0 / 0.4);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Shared form primitives */
+/* Consistent, accessible keyboard focus across all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Form primitives ──────────────────────────────────────────────────────── */
 .input {
-  @apply w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400
-    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white;
+  @apply w-full rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900
+    placeholder-gray-400 shadow-xs transition-colors
+    focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30
+    disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;
 }
 
 .label {
   @apply mb-1.5 block text-xs font-medium text-gray-700;
+}
+
+.helper-text {
+  @apply mt-1 text-xs text-gray-500;
+}
+
+.error-text {
+  @apply mt-1 text-xs font-medium text-red-600;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
+    transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+    disabled:cursor-not-allowed disabled:opacity-60;
+}
+.btn-sm { @apply px-3 py-1.5 text-xs; }
+
+.btn-primary {
+  @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500;
+}
+.btn-secondary {
+  @apply btn border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50 focus-visible:ring-indigo-500;
+}
+.btn-ghost {
+  @apply btn text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-indigo-500;
+}
+.btn-destructive {
+  @apply btn bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+}
+
+/* ── Surfaces ─────────────────────────────────────────────────────────────── */
+.card {
+  @apply rounded-xl border border-gray-200 bg-surface shadow-sm;
+}
+.card-pad { @apply p-6; }
+
+/* ── Badges ───────────────────────────────────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium;
+}
+
+/* ── Loading skeletons ────────────────────────────────────────────────────── */
+.skeleton {
+  @apply animate-pulse rounded-md bg-gray-200;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

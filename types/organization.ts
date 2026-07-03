@@ -17,6 +17,7 @@ export interface Organization {
   name:       string;
   created_by: string | null;
   created_at: string;
+  logo_url?:              string | null;
   // Recruitment inbox settings (email ingestion)
   recruitment_email?:     string | null;
   gmail_connected_email?: string | null;
