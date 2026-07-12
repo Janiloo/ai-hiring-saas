@@ -7,13 +7,7 @@ import { getUserOrgMembership } from "@/lib/utils/get-user-org";
 import { isOrgActive, ORG_SUSPENDED_MESSAGE } from "@/lib/utils/assert-org-active";
 import { type JobPostInsert, type EmploymentType, type JobStatus } from "@/types/job-post";
 
-export type ActionState =
-  | { error: string }
-  // Returned by createJobPost so the UI can show the AI Generated Job Posting
-  // modal instead of redirecting immediately. jobId lets the modal persist the
-  // generated advertisement to the new row.
-  | { success: true; job: JobPostInsert; jobId: string }
-  | null;
+export type ActionState = { error: string } | null;
 
 function parseFormData(formData: FormData): JobPostInsert {
   const skillsRaw = (formData.get("required_skills") as string) ?? "";
@@ -65,9 +59,9 @@ export async function createJobPost(
 
   if (error) return { error: error.message };
 
-  // No redirect — the form shows the AI Generated Job Posting modal,
-  // which navigates back to /dashboard/jobs when closed.
-  return { success: true, job: payload, jobId: created.id };
+  // Land on the new job's detail page, where generating the AI advertisement
+  // is OPTIONAL (Generate AI Job Post button) instead of a forced popup.
+  redirect(`/dashboard/jobs/${created.id}`);
 }
 
 export async function updateJobPost(
