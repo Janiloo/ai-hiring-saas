@@ -1,32 +1,84 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Design System — AI Hiring SaaS (enterprise ATS)
-   Tokens + reusable component primitives. Consumed app-wide.
-   Neutral = slate/gray, Brand = indigo. Calm, dense, professional.
+   Autome Design System
+   Warm paper neutrals · ink-navy primary · orange accent (AI moments only) ·
+   spectrum stage hues · tactile "pressed block" edges on solid elements.
+
+   Strategy: Tailwind v4 exposes its palette as CSS variables, so the gray and
+   indigo scales are REMAPPED here (light and dark) — every existing gray-* /
+   indigo-* class in the app re-keys to the Autome palette without per-file
+   edits. Components migrate to semantic primitives (.btn-*, .chip-*, .card)
+   screen by screen.
    ============================================================================ */
 
 :root {
-  /* Surfaces */
-  --background: #f8fafc;   /* slate-50 — app canvas */
-  --surface:    #ffffff;   /* cards, panels */
-  --foreground: #0f172a;   /* slate-900 — primary text */
+  /* Surfaces — warm paper, not blue-gray */
+  --background: #f7f5f1;
+  --surface:    #ffffff;
+  --foreground: #26241f;
 
-  /* Brand */
-  --brand:        #4f46e5; /* indigo-600 */
-  --brand-hover:  #4338ca; /* indigo-700 */
-  --brand-subtle: #eef2ff; /* indigo-50 */
+  /* Brand — from the logo: ink-navy circle + orange circle */
+  --brand:        #262353;
+  --brand-hover:  #1b1940;
+  --brand-subtle: #e9e9f6;
+  --accent:        #f9822f;
+  --accent-hover:  #ef7118;
+  --accent-subtle: #fdeede;
+  --accent-ink:    #2b1607; /* text on accent fills (AA on orange) */
+
+  /* Spectrum — one hue per workflow state */
+  --hue-wine:   #5c1a2e;
+  --hue-pink:   #d95970;
+  --hue-red:    #c74034;
+  --hue-orange: #ec8b33;
+  --hue-amber:  #e9a23b;
+  --hue-yellow: #f2cb4e;
+  --hue-lime:   #9db94c;
+  --hue-green:  #4c8a3f;
+  --hue-pine:   #2a7a66;
+  --hue-sky:    #6aa9cf;
+  --hue-steel:  #3e6b9e;
+  --hue-navy:   #2b4c7e;
+  --hue-coal:   #3a3f45;
+
+  /* Tactile block edge */
+  --edge: rgb(0 0 0 / 0.16);
 
   /* Radius scale */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
 
-  /* Elevation — soft, low-contrast for enterprise calm */
-  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
-  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06);
-  --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.05);
-  --shadow-lg: 0 12px 32px -8px rgb(15 23 42 / 0.14);
+  /* Elevation — soft, warm-tinted */
+  --shadow-xs: 0 1px 2px 0 rgb(38 36 31 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(38 36 31 / 0.06), 0 1px 2px -1px rgb(38 36 31 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(38 36 31 / 0.08), 0 2px 6px -2px rgb(38 36 31 / 0.05);
+  --shadow-lg: 0 12px 32px -8px rgb(38 36 31 / 0.14);
+
+  /* Warm gray scale (replaces Tailwind's cool gray app-wide) */
+  --color-gray-50:  #f6f4ef;
+  --color-gray-100: #efece6;
+  --color-gray-200: #e3dfd5;
+  --color-gray-300: #cfc9bc;
+  --color-gray-400: #a49e8f;
+  --color-gray-500: #8d887b;
+  --color-gray-600: #5c584e;
+  --color-gray-700: #44413a;
+  --color-gray-800: #2f2d27;
+  --color-gray-900: #26241f;
+
+  /* Indigo scale → Autome navy ramp (existing indigo-* classes become brand) */
+  --color-indigo-50:  #eeeef8;
+  --color-indigo-100: #e2e2f2;
+  --color-indigo-200: #c6c6e4;
+  --color-indigo-300: #9fa0cd;
+  --color-indigo-400: #6f70ab;
+  --color-indigo-500: #3f3d7a;
+  --color-indigo-600: #262353;
+  --color-indigo-700: #1b1940;
+  --color-indigo-800: #131230;
+  --color-indigo-900: #0d0c22;
 }
 
 @theme inline {
@@ -35,42 +87,77 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display), var(--font-geist-sans), ui-sans-serif;
 }
 
 /* Class-based dark mode (toggled via <html class="dark">) */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ----------------------------------------------------------------------------
-   Dark theme. Tailwind v4 exposes its palette as CSS variables (bg-gray-200 →
-   var(--color-gray-200)), so remapping the neutral scale here flips text,
-   borders, gray backgrounds, hover states, and dividers app-wide without
-   touching every component. Accent colors (indigo/red/emerald) are left intact.
+   Dark theme — warm charcoal, not blue-navy. Same remap trick: gray and indigo
+   scales invert so text, borders, hovers, and brand tints flip app-wide.
+   :root.dark (0,2,0) outranks Tailwind's generated :root theme block.
    ---------------------------------------------------------------------------- */
-/* :root.dark (0,2,0) outranks Tailwind's generated :root theme block, which
-   otherwise wins on source order at equal specificity. */
 :root.dark {
-  --background: #0b1120;   /* app canvas */
-  --surface:    #1e293b;   /* cards, panels */
-  --foreground: #e2e8f0;
+  --background: #171613;
+  --surface:    #201f1b;
+  --foreground: #efece4;
 
-  --brand-subtle: #312e81; /* indigo-900-ish */
+  --brand:        #575dc4; /* periwinkle block — white text stays AA */
+  --brand-hover:  #6b71d6;
+  --brand-subtle: #232345;
+  --accent:        #f99a55;
+  --accent-hover:  #fbAD73;
+  --accent-subtle: #35220f;
 
-  /* Neutral scale inverted for dark surfaces */
-  --color-gray-50:  #0f172a;
-  --color-gray-100: #1e293b;
-  --color-gray-200: #334155;
-  --color-gray-300: #475569;
-  --color-gray-400: #64748b;
-  --color-gray-500: #94a3b8;
-  --color-gray-600: #b6c2d4;
-  --color-gray-700: #cbd5e1;
-  --color-gray-800: #e2e8f0;
-  --color-gray-900: #f1f5f9;
+  --edge: rgb(0 0 0 / 0.45);
+
+  /* Warm neutral scale inverted for dark surfaces */
+  --color-gray-50:  #201f1b;
+  --color-gray-100: #2a2823;
+  --color-gray-200: #35322b;
+  --color-gray-300: #4d4a40;
+  --color-gray-400: #7f7a6d;
+  --color-gray-500: #a09b8c;
+  --color-gray-600: #b5b0a3;
+  --color-gray-700: #cbc7bb;
+  --color-gray-800: #e0dcd2;
+  --color-gray-900: #efece4;
+
+  /* Navy ramp inverted — indigo-600 text/icons become readable periwinkle */
+  --color-indigo-50:  #191834;
+  --color-indigo-100: #232345;
+  --color-indigo-200: #2e2e59;
+  --color-indigo-300: #3f3f78;
+  --color-indigo-400: #6a6fbb;
+  --color-indigo-500: #8a90e0;
+  --color-indigo-600: #9aa2f0;
+  --color-indigo-700: #b3b9f5;
+  --color-indigo-800: #cdd1f9;
+  --color-indigo-900: #e2e4fc;
+
+  /* Stage hues lifted slightly so chips stay vivid on charcoal */
+  --hue-sky:    #7db7da;
+  --hue-steel:  #5484b8;
+  --hue-navy:   #4a6ea6;
+  --hue-pink:   #e06e84;
+  --hue-red:    #d55548;
+  --hue-green:  #5f9e51;
+  --hue-amber:  #edb04f;
 }
 
 /* White surfaces → dark panel color (cards, inputs, sidebar, modals). */
 .dark .bg-white {
   background-color: var(--surface);
+}
+/* Raw brand-filled buttons: the inverted indigo ramp turns bg-indigo-600 into
+   light periwinkle, which fails contrast with its white text. Re-point solid
+   brand fills at the AA-safe --brand block instead (text stays white). */
+.dark .bg-indigo-600 {
+  background-color: var(--brand);
+}
+.dark .hover\:bg-indigo-700:hover {
+  background-color: var(--brand-hover);
 }
 /* Soften elevation on dark — heavy shadows read as muddy halos. */
 .dark .shadow-sm,
@@ -128,25 +215,46 @@ body {
   @apply mt-1 text-xs font-medium text-red-600;
 }
 
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
+/* ── Buttons — tactile blocks: pressed bottom edge, presses down on click ──── */
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
-    transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
     disabled:cursor-not-allowed disabled:opacity-60;
+  transition: background-color 150ms ease, border-color 150ms ease,
+              color 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 .btn-sm { @apply px-3 py-1.5 text-xs; }
 
 .btn-primary {
-  @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500;
+  @apply btn text-white focus-visible:ring-indigo-500;
+  background-color: var(--brand);
+  box-shadow: inset 0 -2px 0 var(--edge);
 }
+.btn-primary:hover:not(:disabled) { background-color: var(--brand-hover); }
+
+/* Orange block — EXCLUSIVELY for AI actions (generate, evaluate) */
+.btn-accent {
+  @apply btn focus-visible:ring-indigo-500;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 -2px 0 var(--edge);
+}
+.btn-accent:hover:not(:disabled) { background-color: var(--accent-hover); }
+
 .btn-secondary {
   @apply btn border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50 focus-visible:ring-indigo-500;
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.05);
 }
 .btn-ghost {
   @apply btn text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-indigo-500;
 }
 .btn-destructive {
   @apply btn bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+  box-shadow: inset 0 -2px 0 var(--edge);
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────────── */
@@ -155,14 +263,73 @@ body {
 }
 .card-pad { @apply p-6; }
 
-/* ── Badges ───────────────────────────────────────────────────────────────── */
+/* ── Badges (legacy tinted pill — being replaced by .chip) ────────────────── */
 .badge {
   @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium;
 }
 
+/* ── Paint-chip badges — solid stage hues with the tactile edge ───────────── */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 3px 9px 4px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  color: #fff;
+  box-shadow: inset 0 -2px 0 var(--edge);
+  white-space: nowrap;
+}
+/* Pipeline stages — each owns its hue everywhere it appears */
+.chip-applied     { @apply chip; background: var(--hue-sky);   color: #16242e; }
+.chip-screening   { @apply chip; background: var(--hue-amber); color: #2e2107; }
+.chip-shortlisted { @apply chip; background: var(--hue-pink); }
+.chip-interview   { @apply chip; background: var(--hue-steel); }
+.chip-decision    { @apply chip; background: var(--hue-navy); }
+.chip-hired       { @apply chip; background: var(--hue-green); }
+.chip-rejected    { @apply chip; background: var(--hue-red); }
+/* AI queue states */
+.chip-ai-pending    { @apply chip; background: var(--hue-coal); }
+.chip-ai-processing { @apply chip; background: var(--hue-yellow); color: #2e2607; }
+.chip-ai-completed  { @apply chip; background: var(--hue-pine); }
+.chip-ai-failed     { @apply chip; background: var(--hue-red); }
+/* Generic semantic chips */
+.chip-neutral { @apply chip; background: var(--hue-coal); }
+.chip-success { @apply chip; background: var(--hue-green); }
+.chip-warning { @apply chip; background: var(--hue-amber); color: #2e2107; }
+.chip-error   { @apply chip; background: var(--hue-red); }
+.chip-info    { @apply chip; background: var(--hue-steel); }
+
+/* ── AI score meter — number + judgment at a glance ───────────────────────── */
+.meter {
+  @apply inline-flex items-center gap-2 rounded-md bg-gray-100 px-2.5 py-1;
+}
+.meter-value {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  @apply text-gray-900;
+}
+.meter-bar {
+  @apply h-1.5 w-12 overflow-hidden rounded-full bg-gray-300;
+}
+.meter-fill { @apply block h-full rounded-full; }
+
 /* ── Loading skeletons ────────────────────────────────────────────────────── */
 .skeleton {
-  @apply animate-pulse rounded-md bg-gray-200;
+  border-radius: 6px;
+  background: linear-gradient(90deg,
+    var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer {
+  to { background-position: -200% 0; }
 }
 
 /* ── Micro-interactions ───────────────────────────────────────────────────── */

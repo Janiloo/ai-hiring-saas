@@ -37,7 +37,7 @@ export default async function PlatformDashboardPage() {
     <div className="flex flex-col gap-8 p-8">
       <PageHeader
         title="Platform Overview"
-        subtitle="Cross-tenant metrics for the entire HyperFlow platform."
+        subtitle="Cross-tenant metrics for the entire Autome platform."
       />
 
       <section>

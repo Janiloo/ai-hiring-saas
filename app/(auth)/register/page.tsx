@@ -95,7 +95,7 @@ function RegisterContent() {
       <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-gray-900">Create your workspace</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Set up your company on HyperFlow — you&apos;ll be the admin.
+          Set up your company on Autome — you&apos;ll be the admin.
         </p>
       </div>
 

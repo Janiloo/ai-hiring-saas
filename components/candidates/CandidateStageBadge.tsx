@@ -1,10 +1,8 @@
 import { STAGE_META, type CandidateStage } from "@/types/candidate";
 
+// Paint-chip stage badge: each pipeline stage owns a solid spectrum hue
+// (defined as .chip-<stage> in globals.css) with the tactile pressed edge.
 export default function CandidateStageBadge({ stage }: { stage: CandidateStage }) {
-  const { label, color } = STAGE_META[stage];
-  return (
-    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${color}`}>
-      {label}
-    </span>
-  );
+  const { label } = STAGE_META[stage];
+  return <span className={`chip-${stage}`}>{label}</span>;
 }

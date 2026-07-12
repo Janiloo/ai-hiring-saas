@@ -38,7 +38,7 @@ function LoginContent() {
     <div className="animate-card-in card card-pad shadow-md">
       <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-gray-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-gray-500">Sign in to your HyperFlow account</p>
+        <p className="mt-1 text-sm text-gray-500">Sign in to your Autome account</p>
       </div>
 
       {/* Tab order is driven by DOM order (email → password → Sign in → Forgot);

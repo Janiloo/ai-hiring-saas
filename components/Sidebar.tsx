@@ -59,11 +59,11 @@ export default function Sidebar() {
           />
         ) : (
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-            {orgName ? orgName[0].toUpperCase() : "H"}
+            {orgName ? orgName[0].toUpperCase() : "A"}
           </div>
         )}
         <span className="truncate text-base font-semibold text-gray-900">
-          {orgName ?? "HyperFlow"}
+          {orgName ?? "Autome"}
         </span>
       </div>
 

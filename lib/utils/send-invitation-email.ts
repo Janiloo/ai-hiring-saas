@@ -45,7 +45,7 @@ export async function sendInvitationEmail({
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#111">
       <h2 style="font-size:20px;margin-bottom:8px">You've been invited to join ${orgName}</h2>
       <p style="color:#555;margin-bottom:24px">
-        You have been invited as a <strong>${roleLabel}</strong> on HyperFlow.
+        You have been invited as a <strong>${roleLabel}</strong> on Autome.
         Click the button below to accept your invitation.
       </p>
       <a href="${inviteUrl}"
@@ -65,9 +65,9 @@ export async function sendInvitationEmail({
 
   try {
     await transporter.sendMail({
-      from:    `"HyperFlow" <${from}>`,
+      from:    `"Autome" <${from}>`,
       to,
-      subject: `You're invited to join ${orgName} on HyperFlow`,
+      subject: `You're invited to join ${orgName} on Autome`,
       html,
       text:    `You've been invited to join ${orgName} as ${roleLabel}.\n\nAccept here: ${inviteUrl}\n\nThis link expires in 7 days.`,
     });

@@ -35,7 +35,7 @@ export default function PlatformSidebar() {
           <Icon name="shield" size={18} />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">HyperFlow</p>
+          <p className="truncate text-sm font-semibold text-white">Autome</p>
           <p className="truncate text-[10px] font-medium uppercase tracking-wider text-indigo-400">
             Platform Admin
           </p>

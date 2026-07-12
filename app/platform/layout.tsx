@@ -3,7 +3,7 @@ import PlatformSidebar from "@/components/platform/PlatformSidebar";
 import { requirePlatformAdminPage } from "@/lib/platform/auth";
 
 export const metadata: Metadata = {
-  title: "Platform Admin — HyperFlow",
+  title: "Platform Admin — Autome",
 };
 
 export default async function PlatformLayout({
