@@ -27,7 +27,9 @@ export type IconName =
   | "activity"
   | "sparkles"
   | "mail"
-  | "ban";
+  | "ban"
+  | "menu"
+  | "close";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   users: (
@@ -151,6 +153,8 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="m4.9 4.9 14.2 14.2" />
     </>
   ),
+  menu: <path d="M3 6h18M3 12h18M3 18h18" />,
+  close: <path d="M18 6 6 18M6 6l12 12" />,
 };
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {

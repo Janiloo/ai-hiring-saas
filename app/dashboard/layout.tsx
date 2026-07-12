@@ -24,9 +24,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { suspended, name } = await getOrgSuspension();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    // Column on mobile (top bar above content), row on desktop (sidebar beside).
+    <div className="flex h-screen flex-col overflow-hidden bg-gray-50 md:flex-row">
       <Sidebar />
-      <main className="flex flex-1 flex-col overflow-y-auto">
+      <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         {suspended && <SuspendedBanner orgName={name} />}
         {children}
       </main>
