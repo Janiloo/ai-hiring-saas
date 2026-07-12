@@ -162,7 +162,7 @@ export default function AcceptInviteClient({ invitation, token }: Props) {
         <div className="text-center">
           <h1 className="text-xl font-semibold text-gray-900">Join Workspace</h1>
           <p className="mt-1 text-sm text-gray-500">
-            You&apos;ve been invited to join a workspace on HireAI
+            You&apos;ve been invited to join a workspace on HyperFlow
           </p>
         </div>
 

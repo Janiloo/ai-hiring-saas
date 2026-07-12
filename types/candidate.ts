@@ -19,6 +19,39 @@ export const AI_RECOMMENDATION_META: Record<AIRecommendation, { label: string; c
   not_recommended: { label: "AI Not Recommended", color: "text-red-700 bg-red-50 border-red-200" },
 };
 
+export const AI_STATUS_META: Record<AIStatus, { label: string; color: string; pulse?: boolean }> = {
+  pending:    { label: "AI Queued",     color: "text-gray-600 bg-gray-50 border-gray-200" },
+  processing: { label: "AI Processing", color: "text-blue-700 bg-blue-50 border-blue-200", pulse: true },
+  completed:  { label: "AI Evaluated",  color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  failed:     { label: "AI Failed",     color: "text-red-700 bg-red-50 border-red-200" },
+};
+
+// ── AI match tiers (display/filter only — derived, never stored) ─────────────
+// "Strong Match" = recommended with score ≥ this threshold.
+export const STRONG_MATCH_MIN_SCORE = 80;
+
+export type MatchTier = "strong_match" | "recommended" | "needs_review" | "not_recommended";
+
+export const MATCH_TIER_META: Record<MatchTier, { label: string; color: string; description: string }> = {
+  strong_match:    { label: "Strong Match",    color: "text-indigo-700 bg-indigo-50 border-indigo-200",   description: `Recommended with score ≥ ${STRONG_MATCH_MIN_SCORE}` },
+  recommended:     { label: "Recommended",     color: "text-emerald-700 bg-emerald-50 border-emerald-200", description: "AI recommends interviewing" },
+  needs_review:    { label: "Needs Review",    color: "text-amber-700 bg-amber-50 border-amber-200",       description: "Borderline — recruiter judgment needed" },
+  not_recommended: { label: "Not Recommended", color: "text-red-700 bg-red-50 border-red-200",             description: "Poor fit against the job post" },
+};
+
+/** Derives the display tier from stored AI fields. */
+export function matchTier(
+  recommendation: AIRecommendation | null,
+  score: number | null
+): MatchTier | null {
+  if (!recommendation) return null;
+  if (recommendation === "recommended") {
+    return (score ?? 0) >= STRONG_MATCH_MIN_SCORE ? "strong_match" : "recommended";
+  }
+  if (recommendation === "borderline") return "needs_review";
+  return "not_recommended";
+}
+
 export interface Candidate {
   id: string;
   user_id: string;

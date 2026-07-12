@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HireAI — AI-Powered Hiring",
+  title: "HyperFlow — AI-Powered Organization",
   description: "Streamline your hiring pipeline with AI scoring and automation.",
 };
 

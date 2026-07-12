@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { ensureOrganization } from "@/lib/actions/invitations";
+import PasswordInput from "@/components/auth/PasswordInput";
+import Icon from "@/components/ui/Icon";
 
 function RegisterContent() {
   const router       = useRouter();
@@ -68,9 +70,9 @@ function RegisterContent() {
 
   if (success) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl">
-          ✅
+      <div className="animate-card-in card card-pad text-center shadow-md">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <Icon name="check-circle" size={26} />
         </div>
         <h2 className="mb-2 text-lg font-bold text-gray-900">Check your email</h2>
         <p className="text-sm text-gray-500">
@@ -89,91 +91,107 @@ function RegisterContent() {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-      <h1 className="mb-1 text-xl font-bold text-gray-900">Create your workspace</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Set up your company on HireAI — you&apos;ll be the admin.
-      </p>
+    <div className="animate-card-in card card-pad shadow-md">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold tracking-tight text-gray-900">Create your workspace</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Set up your company on HyperFlow — you&apos;ll be the admin.
+        </p>
+      </div>
 
-      <form onSubmit={handleRegister} className="flex flex-col gap-4">
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-gray-700">Full Name</label>
-          <input
-            type="text"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="John Smith"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
+      <form onSubmit={handleRegister} className="flex flex-col gap-5">
+        {/* Your details */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="fullName" className="label">Full name</label>
+            <input
+              id="fullName"
+              type="text"
+              required
+              autoComplete="name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="John Smith"
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="label">Work email</label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="companyName" className="label">Company name</label>
+            <input
+              id="companyName"
+              type="text"
+              required
+              autoComplete="organization"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Acme Corp"
+              className="input"
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-gray-700">Work Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-gray-700">Company Name</label>
-          <input
-            type="text"
-            required
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Acme Corp"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            required
-            minLength={6}
+        {/* Security */}
+        <div className="flex flex-col gap-4 border-t border-gray-100 pt-5">
+          <PasswordInput
+            id="password"
+            label="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
             placeholder="Min. 6 characters"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-gray-700">Confirm Password</label>
-          <input
-            type="password"
+            autoComplete="new-password"
             required
             minLength={6}
+          />
+
+          <PasswordInput
+            id="confirmPassword"
+            label="Confirm password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={setConfirmPassword}
             placeholder="Re-enter your password"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            autoComplete="new-password"
+            required
+            minLength={6}
           />
         </div>
 
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">
+          <p
+            role="alert"
+            className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-600"
+          >
             {error}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-1 w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
-        >
-          {loading ? "Creating workspace…" : "Create Workspace"}
+        <button type="submit" disabled={loading} className="btn-primary mt-1 w-full">
+          {loading ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              Creating workspace…
+            </>
+          ) : (
+            "Create workspace"
+          )}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-xs text-gray-500">
+      <p className="mt-6 border-t border-gray-100 pt-5 text-center text-sm text-gray-500">
         Already have a workspace?{" "}
         <Link href="/login" className="font-medium text-indigo-600 hover:underline">
           Sign in

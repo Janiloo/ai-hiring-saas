@@ -154,7 +154,7 @@ export async function processEmailEvents(supabase: SupabaseClient): Promise<void
     const applicationAlertEmails = recruitersOnly.length > 0 ? recruitersOnly : recruiterEmails;
 
     const transporter = createTransporter();
-    const from = `"HireAI" <${process.env.SMTP_USER}>`;
+    const from = `"HyperFlow" <${process.env.SMTP_USER}>`;
 
     for (const event of events as unknown as (EmailEvent & { organization_id: string })[]) {
       let mails = buildEmails(

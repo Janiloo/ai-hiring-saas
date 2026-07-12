@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
+import { isOrgActive } from "@/lib/utils/assert-org-active";
 import { gmailConsentUrl } from "@/lib/utils/gmail";
 
 // Starts the Gmail OAuth flow. Admin-only.
@@ -15,6 +16,11 @@ export async function GET(request: Request) {
   const membership = await getUserOrgMembership(supabase);
   if (!membership || membership.orgRole !== "admin") {
     return NextResponse.redirect(new URL("/dashboard/settings?gmail=forbidden", request.url));
+  }
+
+  // Suspended orgs cannot connect/sync Gmail.
+  if (!(await isOrgActive(supabase, membership.orgId))) {
+    return NextResponse.redirect(new URL("/dashboard/settings?gmail=suspended", request.url));
   }
 
   // CSRF: random state stored in an httpOnly cookie, verified in the callback

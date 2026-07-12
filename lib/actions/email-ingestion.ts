@@ -1,10 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
 import { ingestRecruitmentInbox, type IngestionSummary } from "@/lib/utils/email-ingestion";
+import { processAiQueue } from "@/lib/utils/ai-queue";
 
 /** Manually sync the recruitment inbox. Admins and recruiters only. */
 export async function syncRecruitmentInbox(): Promise<IngestionSummary> {
@@ -35,6 +37,11 @@ export async function syncRecruitmentInbox(): Promise<IngestionSummary> {
   if (summary.created > 0) {
     revalidatePath("/dashboard/candidates");
     revalidatePath("/dashboard/pipeline");
+
+    // AI evaluation runs AFTER the response is sent — the user gets the sync
+    // summary immediately; candidates appear with ai_status='pending' and are
+    // upgraded in place as the background queue completes them.
+    after(() => processAiQueue(org.id));
   }
   return summary;
 }

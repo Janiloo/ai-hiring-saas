@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
+import { isOrgActive, ORG_SUSPENDED_MESSAGE } from "@/lib/utils/assert-org-active";
 import {
   type CandidateInsert,
   type CandidateStage,
@@ -70,6 +71,7 @@ export async function createCandidate(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization to add candidates." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot add candidates." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const { orgId: organization_id } = membership;
   const payload = parseFormData(formData);
@@ -121,6 +123,7 @@ export async function updateCandidate(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot edit candidates." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   // Pipeline stage changes go ONLY through updateCandidateStage (state
   // machine + role enforcement) — strip stage from general edits.
@@ -156,6 +159,7 @@ export async function deleteCandidate(id: string): Promise<ActionState> {
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot delete candidates." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   // RLS enforces: creator or admin can delete
   const { error } = await supabase
@@ -182,6 +186,7 @@ export async function updateCandidateStage(
   if (!membership) return { error: "You must belong to an organization." };
   // Interviewers NEVER modify pipeline — evaluation only.
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot change candidate stages." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const { data: current } = await supabase
     .from("candidates")

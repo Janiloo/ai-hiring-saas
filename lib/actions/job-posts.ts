@@ -4,13 +4,15 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
+import { isOrgActive, ORG_SUSPENDED_MESSAGE } from "@/lib/utils/assert-org-active";
 import { type JobPostInsert, type EmploymentType, type JobStatus } from "@/types/job-post";
 
 export type ActionState =
   | { error: string }
   // Returned by createJobPost so the UI can show the AI Generated Job Posting
-  // modal instead of redirecting immediately.
-  | { success: true; job: JobPostInsert }
+  // modal instead of redirecting immediately. jobId lets the modal persist the
+  // generated advertisement to the new row.
+  | { success: true; job: JobPostInsert; jobId: string }
   | null;
 
 function parseFormData(formData: FormData): JobPostInsert {
@@ -50,19 +52,22 @@ export async function createJobPost(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization to create job posts." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot create job posts." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const { orgId: organization_id } = membership;
   const payload = parseFormData(formData);
 
-  const { error } = await supabase
+  const { data: created, error } = await supabase
     .from("job_posts")
-    .insert({ ...payload, user_id: user.id, organization_id });
+    .insert({ ...payload, user_id: user.id, organization_id })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
 
   // No redirect — the form shows the AI Generated Job Posting modal,
   // which navigates back to /dashboard/jobs when closed.
-  return { success: true, job: payload };
+  return { success: true, job: payload, jobId: created.id };
 }
 
 export async function updateJobPost(
@@ -79,6 +84,7 @@ export async function updateJobPost(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot edit job posts." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const payload = parseFormData(formData);
 
@@ -103,6 +109,7 @@ export async function deleteJobPost(id: string): Promise<ActionState> {
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot delete job posts." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   // RLS enforces: creator or admin can delete
   const { error } = await supabase

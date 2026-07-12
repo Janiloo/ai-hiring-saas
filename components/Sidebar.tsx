@@ -18,6 +18,7 @@ const NAV_ITEMS: {
   { label: "Pipeline",   href: "/dashboard/pipeline",   icon: "pipeline",  roles: ["admin", "recruiter", "interviewer"] },
   { label: "Job Posts",  href: "/dashboard/jobs",       icon: "briefcase", roles: ["admin", "recruiter", "interviewer"] },
   { label: "Interviews", href: "/dashboard/interviews", icon: "calendar",  roles: ["admin", "recruiter", "interviewer"] },
+  { label: "AI Recommendations", href: "/dashboard/ai-recommendations", icon: "sparkles", roles: ["admin", "recruiter"] },
   { label: "Reports",    href: "/dashboard/reports",    icon: "chart",     roles: ["admin", "recruiter"] },
   { label: "Settings",   href: "/dashboard/settings",   icon: "settings",  roles: ["admin", "recruiter", "interviewer"] },
 ];
@@ -41,6 +42,11 @@ export default function Sidebar() {
 
   const roleMeta = orgRole ? ORG_ROLE_META[orgRole as OrgRole] : null;
 
+  // Platform admins (SUPER_ADMIN) get an entry point to the platform area. The
+  // claim is set only by the service role, so it can't be spoofed client-side;
+  // /platform re-verifies against the platform_admins table server-side.
+  const isPlatformAdmin = user?.app_metadata?.platform_admin === true;
+
   return (
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
@@ -57,7 +63,7 @@ export default function Sidebar() {
           </div>
         )}
         <span className="truncate text-base font-semibold text-gray-900">
-          {orgName ?? "HireAI"}
+          {orgName ?? "HyperFlow"}
         </span>
       </div>
 
@@ -85,6 +91,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Platform admin entry point (SUPER_ADMIN only) */}
+      {isPlatformAdmin && (
+        <div className="px-3 pb-2">
+          <Link
+            href="/platform"
+            className="flex items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+          >
+            <Icon name="shield" size={18} className="text-indigo-600" />
+            Platform Admin
+          </Link>
+        </div>
+      )}
 
       {/* User footer */}
       <div className="border-t border-gray-200 p-4">

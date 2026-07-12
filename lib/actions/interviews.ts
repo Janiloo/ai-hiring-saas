@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getUserOrgMembership } from "@/lib/utils/get-user-org";
+import { isOrgActive, ORG_SUSPENDED_MESSAGE } from "@/lib/utils/assert-org-active";
 import { type InterviewType, type InterviewStatus, INTERVIEW_TYPE_LABELS } from "@/types/interview";
 import { logActivity } from "@/lib/utils/log-activity";
 import { processEmailEvents } from "@/lib/utils/email-events";
@@ -43,6 +44,7 @@ export async function createInterview(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization to schedule interviews." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot schedule interviews." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const { orgId: organization_id } = membership;
 
@@ -106,6 +108,7 @@ export async function updateInterview(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot edit interviews." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   // RLS enforces: admin or recruiter in the same org can update
   const { error } = await supabase
@@ -131,6 +134,7 @@ export async function deleteInterview(
   const membership = await getUserOrgMembership(supabase);
   if (!membership) return { error: "You must belong to an organization." };
   if (membership.orgRole === "interviewer") return { error: "Interviewers cannot delete interviews." };
+  if (!(await isOrgActive(supabase, membership.orgId))) return { error: ORG_SUSPENDED_MESSAGE };
 
   const id = formData.get("id") as string;
 

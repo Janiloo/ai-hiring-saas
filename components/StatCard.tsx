@@ -16,6 +16,8 @@ interface StatCardProps {
 const KNOWN_ICONS: IconName[] = [
   "users", "briefcase", "calendar", "check-circle",
   "chevron-right", "user-plus", "calendar-plus", "arrow-right",
+  "shield", "building", "activity", "sparkles", "mail", "ban",
+  "dashboard", "pipeline", "chart", "settings",
 ];
 
 function isIconName(v: string): v is IconName {

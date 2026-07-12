@@ -6,9 +6,11 @@ import { generateJobAd, type JobAdInput } from "@/lib/actions/ai-job-post";
 
 interface AIJobAdModalProps {
   job: JobAdInput;
+  /** New job post's id — the generated ad is persisted to this row. */
+  jobId: string;
 }
 
-export default function AIJobAdModal({ job }: AIJobAdModalProps) {
+export default function AIJobAdModal({ job, jobId }: AIJobAdModalProps) {
   const router = useRouter();
   const [ad, setAd]           = useState<string | null>(null);
   const [error, setError]     = useState<string | null>(null);
@@ -18,11 +20,12 @@ export default function AIJobAdModal({ job }: AIJobAdModalProps) {
   // All setState here happens after the await (async continuation), which
   // keeps the initial-mount effect free of synchronous setState.
   const run = useCallback(async () => {
-    const result = await generateJobAd(job);
+    // Persisted server-side — closing the modal no longer loses the ad.
+    const result = await generateJobAd(job, jobId);
     if (result.error) setError(result.error);
     else setAd(result.ad ?? null);
     setLoading(false);
-  }, [job]);
+  }, [job, jobId]);
 
   useEffect(() => {
     // Data fetch on mount — all setState happens after the await resolves.
@@ -57,7 +60,7 @@ export default function AIJobAdModal({ job }: AIJobAdModalProps) {
           <div>
             <h2 className="text-base font-semibold text-gray-900">AI Generated Job Posting</h2>
             <p className="text-xs text-gray-500">
-              Job post saved. Copy this advertisement to LinkedIn, Indeed, JobStreet, Facebook Jobs, or your careers page.
+              Saved with the job post — you can copy, edit, or regenerate it anytime from the job&apos;s page.
             </p>
           </div>
           <button

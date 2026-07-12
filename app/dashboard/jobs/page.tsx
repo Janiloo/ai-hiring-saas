@@ -95,7 +95,12 @@ export default async function JobPostsPage({ searchParams }: PageProps) {
                 {/* Left */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-900">{job.title}</p>
+                    <Link
+                      href={`/dashboard/jobs/${job.id}`}
+                      className="text-sm font-semibold text-gray-900 hover:text-indigo-600"
+                    >
+                      {job.title}
+                    </Link>
                     <EmploymentTypeBadge type={job.employment_type} />
                   </div>
                   <p className="mt-0.5 text-xs text-gray-500">
@@ -131,17 +136,25 @@ export default async function JobPostsPage({ searchParams }: PageProps) {
                       year: "numeric",
                     })}
                   </p>
-                  {canManage && (
-                    <div className="flex items-center gap-1">
-                      <Link
-                        href={`/dashboard/jobs/${job.id}/edit`}
-                        className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
-                      >
-                        Edit
-                      </Link>
-                      <DeleteJobButton id={job.id} />
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/dashboard/jobs/${job.id}`}
+                      className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+                    >
+                      View
+                    </Link>
+                    {canManage && (
+                      <>
+                        <Link
+                          href={`/dashboard/jobs/${job.id}/edit`}
+                          className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+                        >
+                          Edit
+                        </Link>
+                        <DeleteJobButton id={job.id} />
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );

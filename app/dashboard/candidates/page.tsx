@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import PageHeader from "@/components/PageHeader";
 import CandidateStageBadge from "@/components/candidates/CandidateStageBadge";
+import AIStatusBadge from "@/components/candidates/AIStatusBadge";
 import CandidateFilters from "@/components/candidates/CandidateFilters";
 import DeleteCandidateButton from "@/components/candidates/DeleteCandidateButton";
 import Pagination from "@/components/Pagination";
@@ -123,8 +124,11 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* Right: stage + date + actions */}
+              {/* Right: AI status + stage + date + actions */}
               <div className="flex shrink-0 items-center gap-4">
+                <span className="hidden md:inline-flex">
+                  <AIStatusBadge status={c.ai_status} />
+                </span>
                 <CandidateStageBadge stage={c.stage} />
                 <p className="hidden text-xs text-gray-400 sm:block">
                   {new Date(c.created_at).toLocaleDateString("en-US", {

@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { ingestRecruitmentInbox } from "@/lib/utils/email-ingestion";
+import { processAiQueue } from "@/lib/utils/ai-queue";
 
 export const maxDuration = 300;
 
-// Scheduled ingestion endpoint (e.g. Vercel Cron or n8n later).
-// Auth: Authorization: Bearer <INGEST_CRON_SECRET>. Uses the service-role key
-// because there is no user session — never expose this route without the secret.
+// Scheduled ingestion endpoint (Vercel Cron / external scheduler / n8n).
+// Auth: Authorization: Bearer <secret>. Accepts either INGEST_CRON_SECRET
+// (manual/external schedulers) or CRON_SECRET (Vercel Cron sends this env var
+// automatically as a Bearer token). Uses the service-role key because there is
+// no user session — never expose this route without a secret configured.
 export async function GET(request: Request) {
-  const secret = process.env.INGEST_CRON_SECRET;
-  const auth   = request.headers.get("authorization");
-  if (!secret || auth !== `Bearer ${secret}`) {
+  const auth    = request.headers.get("authorization");
+  const secrets = [process.env.INGEST_CRON_SECRET, process.env.CRON_SECRET].filter(Boolean);
+  if (secrets.length === 0 || !secrets.some((s) => auth === `Bearer ${s}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -22,10 +25,12 @@ export async function GET(request: Request) {
 
   const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  // Every org with a connected Gmail inbox
+  // Every ACTIVE org with a connected Gmail inbox — suspended orgs are skipped
+  // so their Gmail synchronization is disabled while suspended.
   const { data: orgs, error } = await supabase
     .from("organizations")
     .select("id, name, recruitment_email, gmail_refresh_token, created_by")
+    .eq("status", "active")
     .not("gmail_refresh_token", "is", null);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -36,5 +41,9 @@ export async function GET(request: Request) {
     results[org.name] = await ingestRecruitmentInbox(supabase, org, org.created_by);
   }
 
-  return NextResponse.json({ ok: true, results });
+  // Drain the AI evaluation queue (all orgs): processes candidates just
+  // ingested above plus any pending/stuck retries from earlier runs.
+  const aiQueue = await processAiQueue();
+
+  return NextResponse.json({ ok: true, results, aiQueue });
 }

@@ -8,19 +8,20 @@ import {
   getAttachment,
   markAsRead,
 } from "@/lib/utils/gmail";
-import { evaluateResume } from "@/lib/utils/ai-evaluation";
 import { processEmailEvents } from "@/lib/utils/email-events";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Email ingestion pipeline.
+// Email ingestion pipeline — INGESTION ONLY, no AI.
 //
 // RULES (enforced here, not by AI):
 //  - Only process emails with a PDF resume attachment.
 //  - Subject must be exactly "<Active Job Post Title> Candidate"
 //    (case-insensitive, trimmed). The SUBJECT determines the job post — never AI.
 //  - No match → no candidate; auto-reply with the correct format; log it.
-//  - Match → parse resume with AI, evaluate, create candidate in "Applied",
-//    associate with the matched job post, notify recruiters.
+//  - Match → store the resume PDF, create candidate in "Applied" with
+//    ai_status='pending', associate with the matched job post, notify recruiters.
+//  - AI evaluation runs SEPARATELY via lib/utils/ai-queue.ts (background),
+//    so sync finishes fast and never blocks on the model.
 //  - AI never moves pipeline stages.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,39 @@ function subjectToJobTitle(subject: string): string | null {
   // "<Job Title> Candidate" — case-insensitive, trimmed
   const m = subject.trim().match(/^(.+?)\s+candidate$/i);
   return m ? m[1].trim() : null;
+}
+
+/**
+ * Stores an inbound resume PDF in the "resumes" bucket (same layout as manual
+ * uploads in lib/actions/candidates.ts) and returns its public URL. Storing
+ * the PDF is what lets AI evaluation run later, outside the sync request.
+ * Returns null on failure — the candidate is still created, just not queueable.
+ */
+async function storeResume(pdfBase64: string, organizationId: string): Promise<string | null> {
+  try {
+    const { createClient: createServiceClient } = await import("@supabase/supabase-js");
+    const admin = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    );
+    const path = `${organizationId}/${crypto.randomUUID()}.pdf`;
+    const { error } = await admin.storage
+      .from("resumes")
+      .upload(path, Buffer.from(pdfBase64, "base64"), {
+        contentType: "application/pdf",
+        upsert: false,
+      });
+    if (error) {
+      console.error("[ingestion] Resume upload failed:", error.message);
+      return null;
+    }
+    const { data: { publicUrl } } = admin.storage.from("resumes").getPublicUrl(path);
+    return publicUrl;
+  } catch (err) {
+    console.error("[ingestion] Resume upload failed:", err);
+    return null;
+  }
 }
 
 function smtpTransporter() {
@@ -172,9 +206,10 @@ export async function ingestRecruitmentInbox(
         continue;
       }
 
-      // Valid application → download resume, run AI parsing + evaluation
+      // Valid application → store the resume PDF, create the candidate, and
+      // QUEUE AI evaluation (ai_status='pending'). No AI runs during sync.
       const pdfBase64 = await getAttachment(accessToken, meta.id, msg.pdfAttachment.attachmentId);
-      const evaluation = await evaluateResume(pdfBase64, job);
+      const resumeUrl = await storeResume(pdfBase64, org.id);
 
       const { data: candidate, error: insertError } = await supabase
         .from("candidates")
@@ -182,23 +217,18 @@ export async function ingestRecruitmentInbox(
           user_id:         actorUserId,
           organization_id: org.id,
           job_post_id:     job.id, // determined by the email subject — never by AI
-          full_name:       evaluation.full_name || msg.fromName || msg.fromEmail,
-          email:           evaluation.email ?? msg.fromEmail,
-          phone:           evaluation.phone,
-          resume_url:      null,
+          full_name:       msg.fromName || msg.fromEmail, // upgraded by AI later
+          email:           msg.fromEmail,
+          phone:           null,
+          resume_url:      resumeUrl,
           stage:           "applied", // pipeline stage is system-set; AI never moves stages
           applied_via:     "email",
-          notes:
-            `Experience: ${evaluation.experience}\n\nEducation: ${evaluation.education}` +
-            (evaluation.certifications.length ? `\n\nCertifications: ${evaluation.certifications.join(", ")}` : "") +
-            (evaluation.skills.length ? `\n\nSkills (from resume): ${evaluation.skills.join(", ")}` : ""),
-          ai_status:         "completed",
-          ai_score:          evaluation.ai_score,
-          ai_recommendation: evaluation.ai_recommendation,
-          ai_reason:         evaluation.reasoning,
-          ai_strengths:      evaluation.strengths,
-          ai_weaknesses:     evaluation.weaknesses,
-          ai_summary:        evaluation.summary,
+          notes:           null, // filled by AI parsing when evaluation completes
+          // Queue for background AI; if the PDF couldn't be stored there is
+          // nothing for AI to read — mark failed with a reason instead of
+          // leaving an unprocessable 'pending' row.
+          ai_status:       resumeUrl ? "pending" : "failed",
+          ai_reason:       resumeUrl ? null : "Resume PDF could not be stored during sync.",
         })
         .select("id")
         .single();
@@ -209,7 +239,7 @@ export async function ingestRecruitmentInbox(
         continue;
       }
 
-      await log("processed", `Candidate created for "${job.title}" (AI score ${evaluation.ai_score}).`, {
+      await log("processed", `Candidate created for "${job.title}" — AI evaluation queued.`, {
         ...base,
         candidate_id: candidate.id,
       });

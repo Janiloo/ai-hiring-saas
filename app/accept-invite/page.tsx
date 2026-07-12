@@ -3,7 +3,7 @@ import { getInvitationByToken } from "@/lib/queries/invitations";
 import AcceptInviteClient from "@/components/invitations/AcceptInviteClient";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Accept Invitation — HireAI" };
+export const metadata: Metadata = { title: "Accept Invitation — HyperFlow" };
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;

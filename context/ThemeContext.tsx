@@ -45,7 +45,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.cookie = `theme=${theme}; path=/; max-age=31536000; samesite=lax`;
   }, [theme, mounted]);
 
-  const toggle = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+  const toggle = () => {
+    document.documentElement.classList.add("theme-transitioning");
+    setTheme((t) => (t === "light" ? "dark" : "light"));
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transitioning");
+    }, 350);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggle }}>

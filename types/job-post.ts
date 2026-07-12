@@ -15,11 +15,17 @@ export interface JobPost {
   description: string;
   required_skills: string[];
   status: JobStatus;
+  // AI-generated job advertisement (persisted — survives modal close)
+  generated_ad: string | null;
+  generated_ad_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type JobPostInsert = Omit<JobPost, "id" | "user_id" | "organization_id" | "created_at" | "updated_at">;
+export type JobPostInsert = Omit<
+  JobPost,
+  "id" | "user_id" | "organization_id" | "generated_ad" | "generated_ad_at" | "created_at" | "updated_at"
+>;
 export type JobPostUpdate = Partial<JobPostInsert>;
 
 export interface JobPostFilters {
