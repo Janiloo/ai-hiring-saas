@@ -88,7 +88,7 @@ async function ollamaChat({ system, prompt, format }: OllamaChatOptions): Promis
 
 // ── Gemini (Google AI Studio, free tier) ─────────────────────────────────────
 
-const GEMINI_MODEL = () => process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const GEMINI_MODEL = () => process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 
 interface GeminiChatOptions {
   system:  string;
