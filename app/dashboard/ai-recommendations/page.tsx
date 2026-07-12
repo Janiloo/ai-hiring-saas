@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import Icon from "@/components/ui/Icon";
 import AiRecommendationFilters from "@/components/candidates/AiRecommendationFilters";
+import AutoRefresh from "@/components/AutoRefresh";
 import CandidateStageBadge from "@/components/candidates/CandidateStageBadge";
 import { getAiRecommendedCandidates } from "@/lib/queries/candidates";
 import { getJobPosts } from "@/lib/queries/job-posts";
@@ -59,6 +60,7 @@ export default async function AiRecommendationsPage({ searchParams }: PageProps)
 
   return (
     <div className="flex flex-col gap-6 p-8">
+      <AutoRefresh />
       <PageHeader
         title="AI Recommendations"
         subtitle="Candidates ranked by AI evaluation. AI informs — recruiters and admins decide; pipeline moves stay manual."

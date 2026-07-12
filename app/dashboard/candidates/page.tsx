@@ -10,6 +10,7 @@ import { getCandidates } from "@/lib/queries/candidates";
 import { getJobPosts } from "@/lib/queries/job-posts";
 import { getUserOrganization } from "@/lib/queries/invitations";
 import SyncInboxButton from "@/components/candidates/SyncInboxButton";
+import AutoRefresh from "@/components/AutoRefresh";
 import type { CandidateStage, AIRecommendation } from "@/types/candidate";
 
 interface PageProps {
@@ -52,6 +53,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col gap-6 p-8">
+      {/* Keep the list fresh: new candidates from background ingestion and
+          AI badge transitions appear without a manual reload. */}
+      <AutoRefresh />
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <PageHeader

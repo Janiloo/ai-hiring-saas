@@ -2,6 +2,7 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import PipelineCard from "@/components/pipeline/PipelineCard";
 import Icon from "@/components/ui/Icon";
+import AutoRefresh from "@/components/AutoRefresh";
 import { getCandidatesGroupedByStage } from "@/lib/queries/pipeline";
 import { STAGE_ORDER, STAGE_META, type CandidateStage } from "@/types/candidate";
 
@@ -29,6 +30,7 @@ export default async function PipelinePage() {
 
   return (
     <div className="flex h-full flex-col gap-6 p-8">
+      <AutoRefresh />
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Hiring Pipeline"
