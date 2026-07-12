@@ -32,6 +32,8 @@ export async function proxy(request: NextRequest) {
   //   the "set new password" form. The page redirects to /dashboard itself only
   //   after the password is successfully updated.
   const isPublicRoute =
+    // Landing page — Autome's public front door (both auth states may view)
+    pathname === "/" ||
     pathname.startsWith("/accept-invite") ||
     pathname.startsWith("/reset-password") ||
     // Machine-to-machine endpoints authenticate with their own bearer secrets
