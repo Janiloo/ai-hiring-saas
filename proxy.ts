@@ -33,7 +33,12 @@ export async function proxy(request: NextRequest) {
   //   after the password is successfully updated.
   const isPublicRoute =
     pathname.startsWith("/accept-invite") ||
-    pathname.startsWith("/reset-password");
+    pathname.startsWith("/reset-password") ||
+    // Machine-to-machine endpoints authenticate with their own bearer secrets
+    // (INGEST_CRON_SECRET / CRON_SECRET / webhook signatures) — no user session
+    // exists, so they must never be redirected to /login.
+    pathname.startsWith("/api/ingest") ||
+    pathname.startsWith("/api/webhooks");
 
   if (!user && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone();

@@ -121,7 +121,9 @@ async function geminiChat({ system, prompt, json, pdfBase64 }: GeminiChatOptions
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: "user", parts }],
         generationConfig: {
-          maxOutputTokens: 4096,
+          // Generous budget: flash models spend output tokens on internal
+          // reasoning; too low a cap truncates JSON mid-object.
+          maxOutputTokens: 16384,
           ...(json ? { responseMimeType: "application/json" } : {}),
         },
       }),
@@ -197,13 +199,20 @@ export async function generateJSON<T>(
   if (activeProvider() === "gemini") {
     // Gemini's responseSchema doesn't support union types (["string","null"]),
     // so we force JSON output mode and embed the schema in the prompt instead.
-    const text = await geminiChat({
-      system,
-      prompt: `${prompt}\n\nRespond ONLY with a JSON object matching this exact schema (no markdown, no commentary):\n${JSON.stringify(schema, null, 2)}`,
-      json: true,
-      pdfBase64,
-    });
-    return parseModelJSON<T>(text);
+    const geminiPrompt = `${prompt}\n\nRespond ONLY with a JSON object matching this exact schema (no markdown, no commentary):\n${JSON.stringify(schema, null, 2)}`;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const text = await geminiChat({ system, prompt: geminiPrompt, json: true, pdfBase64 });
+      try {
+        return parseModelJSON<T>(text);
+      } catch (err) {
+        // Truncated/malformed JSON — retry once before failing the job.
+        lastError = err;
+      }
+    }
+    throw new Error(
+      `Gemini returned invalid JSON: ${lastError instanceof Error ? lastError.message : "parse error"}`
+    );
   }
 
   const client = new Anthropic();
