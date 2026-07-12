@@ -6,15 +6,16 @@ import AutoRefresh from "@/components/AutoRefresh";
 import { getCandidatesGroupedByStage } from "@/lib/queries/pipeline";
 import { STAGE_ORDER, STAGE_META, type CandidateStage } from "@/types/candidate";
 
-// Per-stage accent used for the header dot and the distribution bar.
-const STAGE_DOT: Record<CandidateStage, string> = {
-  applied:     "bg-blue-400",
-  screening:   "bg-yellow-400",
-  shortlisted: "bg-indigo-400",
-  interview:   "bg-purple-400",
-  decision:    "bg-teal-400",
-  hired:       "bg-emerald-400",
-  rejected:    "bg-red-400",
+// Each stage owns a spectrum hue — the SAME hue as its paint-chip badge, so a
+// stage reads identically on a badge, a kanban lane cap, and the distribution bar.
+const STAGE_HUE: Record<CandidateStage, string> = {
+  applied:     "var(--hue-sky)",
+  screening:   "var(--hue-amber)",
+  shortlisted: "var(--hue-pink)",
+  interview:   "var(--hue-steel)",
+  decision:    "var(--hue-navy)",
+  hired:       "var(--hue-green)",
+  rejected:    "var(--hue-red)",
 };
 
 export default async function PipelinePage() {
@@ -54,11 +55,12 @@ export default async function PipelinePage() {
                 key={stage}
                 className="flex h-full min-w-[112px] flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-gray-50"
               >
+                {/* Stage-hue cap */}
+                <div className="h-1 w-full shrink-0" style={{ background: STAGE_HUE[stage] }} />
                 {/* Column header */}
                 <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5">
-                  <span className={`h-2 w-2 shrink-0 rounded-full ${STAGE_DOT[stage]}`} />
-                  <span className="truncate text-xs font-semibold text-gray-700">{label}</span>
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border border-gray-200 bg-white px-1.5 text-xs font-medium text-gray-600">
+                  <span className="truncate text-xs font-bold uppercase tracking-wide text-gray-600">{label}</span>
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border border-gray-200 bg-white px-1.5 text-xs font-semibold text-gray-600">
                     {cards.length}
                   </span>
                 </div>
@@ -99,8 +101,7 @@ export default async function PipelinePage() {
             {STAGE_ORDER.filter((s) => counts[s] > 0).map((stage) => (
               <div
                 key={stage}
-                className={STAGE_DOT[stage]}
-                style={{ flexGrow: counts[stage] }}
+                style={{ flexGrow: counts[stage], background: STAGE_HUE[stage] }}
                 title={`${STAGE_META[stage].label}: ${counts[stage]}`}
               />
             ))}

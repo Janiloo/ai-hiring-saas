@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import PageHeader from "@/components/PageHeader";
 import CandidateStageBadge from "@/components/candidates/CandidateStageBadge";
 import AIStatusBadge from "@/components/candidates/AIStatusBadge";
+import Icon from "@/components/ui/Icon";
 import CandidateFilters from "@/components/candidates/CandidateFilters";
 import DeleteCandidateButton from "@/components/candidates/DeleteCandidateButton";
 import Pagination from "@/components/Pagination";
@@ -65,13 +66,11 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
         />
         {canManage && (
           <div className="flex shrink-0 items-center gap-3">
-          <SyncInboxButton />
-          <Link
-            href="/dashboard/candidates/new"
-            className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
-          >
-            + Add Candidate
-          </Link>
+            <SyncInboxButton />
+            <Link href="/dashboard/candidates/new" className="btn-primary">
+              <Icon name="user-plus" size={16} />
+              <span className="hidden sm:inline">Add Candidate</span>
+            </Link>
           </div>
         )}
       </div>
@@ -90,17 +89,18 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
 
       {/* List */}
       {candidates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white py-16 text-center">
-          <p className="text-sm font-medium text-gray-500">No candidates yet</p>
-          <p className="mt-1 text-xs text-gray-400">
-            Add your first candidate to get started.
+        <div className="card flex flex-col items-center justify-center border-dashed py-16 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--accent-subtle)", color: "var(--accent)", boxShadow: "inset 0 -2px 0 var(--edge)" }}>
+            <Icon name="user-plus" size={20} />
+          </span>
+          <p className="mt-3 text-sm font-semibold text-gray-900">No candidates yet</p>
+          <p className="mt-1 max-w-xs text-xs text-gray-500">
+            Connect Gmail to ingest applications automatically, or add a candidate manually.
           </p>
           {canManage && (
-            <Link
-              href="/dashboard/candidates/new"
-              className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            >
-              + Add Candidate
+            <Link href="/dashboard/candidates/new" className="btn-primary btn-sm mt-4">
+              <Icon name="user-plus" size={14} />
+              Add Candidate
             </Link>
           )}
         </div>
@@ -109,7 +109,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           {candidates.map((c) => (
             <div
               key={c.id}
-              className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
+              className="card flex items-center justify-between gap-4 px-5 py-4 transition-shadow hover:shadow-md"
             >
               {/* Left: avatar + info */}
               <div className="flex min-w-0 flex-1 items-center gap-4">

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import PageHeader from "@/components/PageHeader";
 import { JobStatusBadge, EmploymentTypeBadge } from "@/components/jobs/JobStatusBadge";
 import DeleteJobButton from "@/components/jobs/DeleteJobButton";
+import Icon from "@/components/ui/Icon";
 import JobFilters from "@/components/jobs/JobFilters";
 import Pagination from "@/components/Pagination";
 import { getJobPosts } from "@/lib/queries/job-posts";
@@ -50,11 +51,9 @@ export default async function JobPostsPage({ searchParams }: PageProps) {
           subtitle="Manage open roles and track your hiring pipeline."
         />
         {canManage && (
-          <Link
-            href="/dashboard/jobs/new"
-            className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
-          >
-            + New Job Post
+          <Link href="/dashboard/jobs/new" className="btn-primary shrink-0">
+            <Icon name="briefcase" size={16} />
+            <span className="hidden sm:inline">New Job Post</span>
           </Link>
         )}
       </div>
@@ -71,15 +70,16 @@ export default async function JobPostsPage({ searchParams }: PageProps) {
 
       {/* List */}
       {jobs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white py-16 text-center">
-          <p className="text-sm font-medium text-gray-500">No job posts yet</p>
-          <p className="mt-1 text-xs text-gray-400">Create your first role to get started.</p>
+        <div className="card flex flex-col items-center justify-center border-dashed py-16 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600" style={{ boxShadow: "inset 0 -2px 0 var(--edge)" }}>
+            <Icon name="briefcase" size={20} />
+          </span>
+          <p className="mt-3 text-sm font-semibold text-gray-900">No job posts yet</p>
+          <p className="mt-1 text-xs text-gray-500">Create your first role to get started.</p>
           {canManage && (
-            <Link
-              href="/dashboard/jobs/new"
-              className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            >
-              + New Job Post
+            <Link href="/dashboard/jobs/new" className="btn-primary btn-sm mt-4">
+              <Icon name="briefcase" size={14} />
+              New Job Post
             </Link>
           )}
         </div>
@@ -90,7 +90,7 @@ export default async function JobPostsPage({ searchParams }: PageProps) {
             return (
               <div
                 key={job.id}
-                className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
+                className="card flex items-center justify-between gap-4 px-5 py-4 transition-shadow hover:shadow-md"
               >
                 {/* Left */}
                 <div className="min-w-0 flex-1">
