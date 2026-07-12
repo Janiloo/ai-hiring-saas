@@ -5,16 +5,23 @@ import Anthropic from "@anthropic-ai/sdk";
 //
 //   AI_PROVIDER=ollama     → free: local Ollama (http://localhost:11434) or
 //                            Ollama Cloud (https://ollama.com + OLLAMA_API_KEY)
+//   AI_PROVIDER=gemini     → Google Gemini API free tier (GEMINI_API_KEY from
+//                            https://aistudio.google.com/apikey). Reads PDFs
+//                            natively. Good default for hosted deployments.
 //   AI_PROVIDER=anthropic  → Claude API (requires ANTHROPIC_API_KEY + credits)
 //
 // Ollama models can't read PDFs directly, so callers that have a PDF extract
-// its text first (see extractPdfText) and pass plain text.
+// its text first (see extractPdfText) and pass plain text. Gemini and Claude
+// accept the PDF directly.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type AIProvider = "ollama" | "anthropic";
+export type AIProvider = "ollama" | "gemini" | "anthropic";
 
 export function activeProvider(): AIProvider {
-  return (process.env.AI_PROVIDER ?? "ollama") === "anthropic" ? "anthropic" : "ollama";
+  const p = process.env.AI_PROVIDER ?? "ollama";
+  if (p === "anthropic") return "anthropic";
+  if (p === "gemini") return "gemini";
+  return "ollama";
 }
 
 export function providerConfigError(): string | null {
@@ -22,6 +29,11 @@ export function providerConfigError(): string | null {
     return process.env.ANTHROPIC_API_KEY
       ? null
       : "ANTHROPIC_API_KEY is not configured on the server.";
+  }
+  if (activeProvider() === "gemini") {
+    return process.env.GEMINI_API_KEY
+      ? null
+      : "GEMINI_API_KEY is not configured on the server.";
   }
   return null; // Ollama needs no key locally; cloud key is optional config
 }
@@ -74,10 +86,80 @@ async function ollamaChat({ system, prompt, format }: OllamaChatOptions): Promis
   return text;
 }
 
+// ── Gemini (Google AI Studio, free tier) ─────────────────────────────────────
+
+const GEMINI_MODEL = () => process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+
+interface GeminiChatOptions {
+  system:  string;
+  prompt:  string;
+  /** When true, forces application/json output (schema is embedded in prompt). */
+  json?:   boolean;
+  /** Optional PDF — Gemini reads PDFs natively via inline_data. */
+  pdfBase64?: string;
+}
+
+async function geminiChat({ system, prompt, json, pdfBase64 }: GeminiChatOptions): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured on the server.");
+
+  const parts: Record<string, unknown>[] = [];
+  if (pdfBase64) {
+    parts.push({ inline_data: { mime_type: "application/pdf", data: pdfBase64 } });
+  }
+  parts.push({ text: prompt });
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL()}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: "user", parts }],
+        generationConfig: {
+          maxOutputTokens: 4096,
+          ...(json ? { responseMimeType: "application/json" } : {}),
+        },
+      }),
+    }
+  );
+
+  if (res.status === 429) {
+    throw new Error("Gemini rate limit reached (free tier). The queue will retry on the next run.");
+  }
+  if (!res.ok) throw new Error(`Gemini request failed: ${res.status} ${await res.text()}`);
+
+  const data = (await res.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
+  };
+  const text = (data.candidates?.[0]?.content?.parts ?? [])
+    .map((p) => p.text ?? "")
+    .join("")
+    .trim();
+  if (!text) {
+    const reason = data.candidates?.[0]?.finishReason;
+    throw new Error(`Gemini returned an empty response${reason ? ` (${reason})` : ""}.`);
+  }
+  return text;
+}
+
+/** Strips markdown code fences some models wrap around JSON output. */
+function parseModelJSON<T>(text: string): T {
+  const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+  return JSON.parse(cleaned) as T;
+}
+
 /** Free-form text generation on the active provider. */
 export async function generateText(system: string, prompt: string): Promise<string> {
   if (activeProvider() === "ollama") {
     return ollamaChat({ system, prompt });
+  }
+  if (activeProvider() === "gemini") {
+    return geminiChat({ system, prompt });
   }
 
   const client = new Anthropic();
@@ -103,13 +185,25 @@ export async function generateJSON<T>(
   system: string,
   prompt: string,
   schema: Record<string, unknown>,
-  /** Optional PDF for Anthropic (native document input). Ollama callers must
-   *  extract text themselves and include it in `prompt`. */
+  /** Optional PDF for Anthropic/Gemini (native document input). Ollama callers
+   *  must extract text themselves and include it in `prompt`. */
   pdfBase64?: string
 ): Promise<T> {
   if (activeProvider() === "ollama") {
     const text = await ollamaChat({ system, prompt, format: schema });
     return JSON.parse(text) as T;
+  }
+
+  if (activeProvider() === "gemini") {
+    // Gemini's responseSchema doesn't support union types (["string","null"]),
+    // so we force JSON output mode and embed the schema in the prompt instead.
+    const text = await geminiChat({
+      system,
+      prompt: `${prompt}\n\nRespond ONLY with a JSON object matching this exact schema (no markdown, no commentary):\n${JSON.stringify(schema, null, 2)}`,
+      json: true,
+      pdfBase64,
+    });
+    return parseModelJSON<T>(text);
   }
 
   const client = new Anthropic();
