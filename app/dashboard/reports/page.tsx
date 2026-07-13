@@ -34,7 +34,7 @@ export default async function ReportsPage() {
 
       <section>
         <SectionHeader title="Hiring Funnel" />
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="card card-pad">
           {total === 0 ? (
             <p className="text-center text-sm text-gray-400 py-4">No candidate data yet.</p>
           ) : (

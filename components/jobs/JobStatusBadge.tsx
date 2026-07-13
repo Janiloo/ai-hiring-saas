@@ -1,10 +1,11 @@
 import type { JobStatus, EmploymentType } from "@/types/job-post";
 import { EMPLOYMENT_TYPE_LABELS } from "@/types/job-post";
 
-const statusStyles: Record<JobStatus, string> = {
-  active: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  paused: "bg-yellow-50 text-yellow-700 border-yellow-100",
-  closed: "bg-gray-100 text-gray-500 border-gray-200",
+// Primary status → paint chip (solid, matches the pipeline stage badges).
+const statusChip: Record<JobStatus, string> = {
+  active: "chip-success",
+  paused: "chip-warning",
+  closed: "chip-neutral",
 };
 
 const statusLabels: Record<JobStatus, string> = {
@@ -14,11 +15,7 @@ const statusLabels: Record<JobStatus, string> = {
 };
 
 export function JobStatusBadge({ status }: { status: JobStatus }) {
-  return (
-    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusStyles[status]}`}>
-      {statusLabels[status]}
-    </span>
-  );
+  return <span className={statusChip[status]}>{statusLabels[status]}</span>;
 }
 
 const typeStyles: Record<EmploymentType, string> = {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Pagination from "@/components/Pagination";
 import { InterviewStatusBadge, InterviewTypeBadge } from "@/components/interviews/InterviewStatusBadge";
+import Icon from "@/components/ui/Icon";
 import { getInterviews } from "@/lib/queries/interviews";
 import { getUserOrganization } from "@/lib/queries/invitations";
 import { type InterviewStatus } from "@/types/interview";
@@ -48,11 +49,9 @@ export default async function InterviewsPage({ searchParams }: PageProps) {
           subtitle={`${total} interview${total !== 1 ? "s" : ""} total`}
         />
         {canManage && (
-          <Link
-            href="/dashboard/interviews/new"
-            className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
-          >
-            + Schedule Interview
+          <Link href="/dashboard/interviews/new" className="btn-primary shrink-0">
+            <Icon name="calendar-plus" size={16} />
+            <span className="hidden sm:inline">Schedule Interview</span>
           </Link>
         )}
       </div>
@@ -78,19 +77,20 @@ export default async function InterviewsPage({ searchParams }: PageProps) {
       </div>
 
       {interviews.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center">
-          <p className="text-sm text-gray-500">No interviews found.</p>
+        <div className="card flex flex-col items-center justify-center border-dashed py-16 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600" style={{ boxShadow: "inset 0 -2px 0 var(--edge)" }}>
+            <Icon name="calendar-plus" size={20} />
+          </span>
+          <p className="mt-3 text-sm font-semibold text-gray-900">No interviews found</p>
           {canManage && (
-            <Link
-              href="/dashboard/interviews/new"
-              className="mt-3 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            >
+            <Link href="/dashboard/interviews/new" className="btn-primary btn-sm mt-4">
+              <Icon name="calendar-plus" size={14} />
               Schedule your first interview
             </Link>
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-left">

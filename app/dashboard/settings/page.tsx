@@ -57,7 +57,7 @@ export default async function SettingsPage() {
       {/* Profile */}
       <section>
         <SectionHeader title="Profile" />
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="card card-pad">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
               {initials}
@@ -108,7 +108,7 @@ export default async function SettingsPage() {
       {/* Notifications */}
       <section>
         <SectionHeader title="Notifications" />
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="card card-pad">
           <div className="flex flex-col gap-4">
             {[
               { label: "New candidate applications",  desc: "Get notified when someone applies to an open role" },
@@ -147,7 +147,7 @@ export default async function SettingsPage() {
       {isAdmin && (
         <section>
           <SectionHeader title="Team" />
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="card card-pad">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">Team Members &amp; Invitations</p>
@@ -157,7 +157,7 @@ export default async function SettingsPage() {
               </div>
               <Link
                 href="/dashboard/settings/team"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
+                className="btn-primary"
               >
                 Manage Team
               </Link>
@@ -169,7 +169,7 @@ export default async function SettingsPage() {
       {/* Danger Zone */}
       <section>
         <SectionHeader title="Danger Zone" />
-        <div className="rounded-xl border border-red-200 bg-white p-6 shadow-sm">
+        <div className="card card-pad border-red-200">
           <p className="text-sm text-gray-500">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>
