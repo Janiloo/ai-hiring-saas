@@ -11,6 +11,14 @@ import { makes } from "../theme";
 import { Chip } from "../components/Chip";
 import { ScoreMeter } from "../components/ScoreMeter";
 import { LogoMark, Wordmark } from "../components/Logo";
+import { Narration, type NarrationLine } from "../components/Narration";
+
+const NARRATION: NarrationLine[] = [
+  { from: 0.4, to: 1.2, text: "A new application lands in your recruitment inbox." },
+  { from: 1.4, to: 3.2, text: "AI reads the resume and scores it against the job." },
+  { from: 3.5, to: 4.5, text: "92 out of 100 — a strong match." },
+  { from: 4.7, to: 7.3, text: "Your team gets a summary and the highlights, ready to act on." },
+];
 
 // Scene 1 — "AI evaluating the candidate".
 // Beats (at 30fps):
@@ -206,8 +214,10 @@ export const AiEvaluating: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      {/* Brand corner */}
-      <div style={{ position: "absolute", bottom: 56, left: 64, display: "flex", alignItems: "center", gap: 14 }}>
+      <Narration lines={NARRATION} bottom={40} />
+
+      {/* Brand mark — top-left; the bottom strip belongs to the narration. */}
+      <div style={{ position: "absolute", top: 54, left: 64, display: "flex", alignItems: "center", gap: 14 }}>
         <LogoMark size={40} />
         <Wordmark size={34} />
       </div>
