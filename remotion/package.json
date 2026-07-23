@@ -1,0 +1,22 @@
+{
+  "name": "makes-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Promo video for Makes, built with Remotion. Isolated from the Next app.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render MakesPromo out/makes-promo.mp4",
+    "still": "remotion still"
+  },
+  "dependencies": {
+    "@remotion/google-fonts": "4.0.409",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.409"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.409",
+    "@types/react": "19.0.0",
+    "typescript": "5.6.3"
+  }
+}

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Isolated Remotion video workspace — its own toolchain, not part of the app.
+    "remotion/**",
   ]),
 ]);
 
