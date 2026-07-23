@@ -9,14 +9,7 @@ import {
 } from "remotion";
 import { makes } from "../theme";
 import { LogoMark, Wordmark } from "../components/Logo";
-import { Narration, type NarrationLine } from "../components/Narration";
-
-const NARRATION: NarrationLine[] = [
-  { from: 0.4, to: 2.1, text: "Start with the basics — title, location, and the skills you need." },
-  { from: 2.3, to: 3.3, text: "One click hands it over to AI." },
-  { from: 3.5, to: 7.3, text: "It writes a polished, board-ready advertisement for you." },
-  { from: 7.6, to: 9.3, text: "Copy it straight to LinkedIn, Indeed, or your careers page." },
-];
+import { Narration } from "../components/Narration";
 
 // Scene — "AI writes the job post". Recruiter fills the role details, presses
 // the orange AI action, and a board-ready advertisement streams in, ready to copy.
@@ -46,7 +39,7 @@ Send your application to careers@company.com
 Subject: Frontend Engineer Candidate
 Attach your resume as a PDF.`;
 
-export const JobPostGenerator: React.FC = () => {
+export const JobPostGenerator: React.FC<{ withVoice?: boolean }> = ({ withVoice = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -277,7 +270,7 @@ export const JobPostGenerator: React.FC = () => {
         </div>
       </div>
 
-      <Narration lines={NARRATION} bottom={40} />
+      <Narration clip="job-post" withVoice={withVoice} bottom={40} />
 
       {/* Brand mark — top-left; the bottom strip belongs to the narration. */}
       <div style={{ position: "absolute", top: 54, left: 64, display: "flex", alignItems: "center", gap: 14 }}>

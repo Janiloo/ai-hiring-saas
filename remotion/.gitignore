@@ -1,3 +1,6 @@
 node_modules/
 out/
 .remotion/
+.env
+.env.local
+public/vo/

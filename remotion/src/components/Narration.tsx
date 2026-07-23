@@ -1,30 +1,41 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { useCurrentFrame, useVideoConfig, interpolate, Sequence, Audio, staticFile } from "remotion";
 import { makes } from "../theme";
+import { captionsFor, NARRATION, type NarrationLine } from "../narration";
 
-export interface NarrationLine {
-  /** Seconds. */
-  from: number;
-  to: number;
-  text: string;
-}
+export type { NarrationLine };
 
-// Friendly, timed narration bar. The clips autoplay MUTED on the landing page,
-// so the story has to be told on screen — this walks the viewer through each
-// beat as it happens, and doubles as an accessibility caption track.
+// Friendly, timed narration.
+//
+// The landing-page clips autoplay MUTED, so the story is told on screen — this
+// caption bar walks the viewer through each beat and doubles as an
+// accessibility caption track. Pass `withVoice` to additionally play the
+// Deepgram-generated voiceover (public/vo/), used by the sound-on cut.
 export const Narration: React.FC<{
-  lines: NarrationLine[];
+  /** Key into NARRATION — also the vo/ audio filename prefix. */
+  clip: string;
+  /** Play the generated voiceover audio in sync with the captions. */
+  withVoice?: boolean;
   /** Horizontal centre in px — shift left when the right side is occupied. */
   centerX?: number;
   maxWidth?: number;
   bottom?: number;
-}> = ({ lines, centerX = 960, maxWidth = 1280, bottom = 58 }) => {
+}> = ({ clip, withVoice = false, centerX = 960, maxWidth = 1280, bottom = 58 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const fade = 0.35 * fps;
+  const lines = captionsFor(clip);
 
   return (
     <>
+      {/* Voiceover — one file per line, started at that line's cue. */}
+      {withVoice &&
+        NARRATION[clip].map((l, i) => (
+          <Sequence key={`vo-${i}`} from={Math.round(l.from * fps)}>
+            <Audio src={staticFile(`vo/${clip}-${i}.mp3`)} />
+          </Sequence>
+        ))}
+
       {lines.map((l) => {
         const from = l.from * fps;
         const to = l.to * fps;

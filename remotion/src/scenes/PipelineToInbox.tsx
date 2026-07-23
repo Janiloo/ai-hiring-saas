@@ -9,14 +9,7 @@ import {
 } from "remotion";
 import { makes } from "../theme";
 import { LogoMark, Wordmark } from "../components/Logo";
-import { Narration, type NarrationLine } from "../components/Narration";
-
-const NARRATION: NarrationLine[] = [
-  { from: 0.5, to: 1.9, text: "Your team moves a candidate forward." },
-  { from: 2.2, to: 3.6, text: "Makes emails them the moment it happens." },
-  { from: 4.0, to: 5.9, text: "Every stage change — sent automatically." },
-  { from: 6.4, to: 9.6, text: "No one chases updates. The candidate always knows where they stand." },
-];
+import { Narration } from "../components/Narration";
 
 // Scene — the payoff shot. Left: the recruiter moves a candidate across the
 // pipeline. Right: the candidate's phone. The instant the card lands in a new
@@ -67,7 +60,7 @@ const EnvelopeIcon: React.FC<{ size?: number; color?: string }> = ({ size = 26, 
   </svg>
 );
 
-export const PipelineToInbox: React.FC = () => {
+export const PipelineToInbox: React.FC<{ withVoice?: boolean }> = ({ withVoice = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const s = (sec: number) => sec * fps;
@@ -328,7 +321,7 @@ export const PipelineToInbox: React.FC = () => {
       </div>
 
       {/* Narration sits left of the phone so it never covers the inbox. */}
-      <Narration lines={NARRATION} centerX={660} maxWidth={1120} bottom={40} />
+      <Narration clip="pipeline-inbox" withVoice={withVoice} centerX={660} maxWidth={1120} bottom={40} />
 
       {/* Brand mark — top-left; the bottom strip belongs to the narration. */}
       <div style={{ position: "absolute", top: 54, left: 64, display: "flex", alignItems: "center", gap: 14 }}>

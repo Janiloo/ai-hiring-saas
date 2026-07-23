@@ -6,6 +6,12 @@
   "scripts": {
     "studio": "remotion studio",
     "render": "remotion render MakesPromo out/makes-promo.mp4",
+    "render:vo": "remotion render MakesPromoVoiceover out/makes-promo-voiceover.mp4",
+    "render:web": "npm run render:web:jobpost && npm run render:web:ai && npm run render:web:pipeline",
+    "render:web:jobpost": "remotion render Feature-JobPost ../public/video/job-post.mp4 --scale=0.6 --crf=30 --muted",
+    "render:web:ai": "remotion render Feature-AiEvaluation ../public/video/ai-evaluation.mp4 --scale=0.6 --crf=30 --muted",
+    "render:web:pipeline": "remotion render Feature-PipelineToInbox ../public/video/pipeline-inbox.mp4 --scale=0.6 --crf=30 --muted",
+    "voiceover": "node scripts/generate-vo.mjs",
     "still": "remotion still"
   },
   "dependencies": {

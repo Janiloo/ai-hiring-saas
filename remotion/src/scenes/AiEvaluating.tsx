@@ -11,14 +11,7 @@ import { makes } from "../theme";
 import { Chip } from "../components/Chip";
 import { ScoreMeter } from "../components/ScoreMeter";
 import { LogoMark, Wordmark } from "../components/Logo";
-import { Narration, type NarrationLine } from "../components/Narration";
-
-const NARRATION: NarrationLine[] = [
-  { from: 0.4, to: 1.2, text: "A new application lands in your recruitment inbox." },
-  { from: 1.4, to: 3.2, text: "AI reads the resume and scores it against the job." },
-  { from: 3.5, to: 4.5, text: "92 out of 100 — a strong match." },
-  { from: 4.7, to: 7.3, text: "Your team gets a summary and the highlights, ready to act on." },
-];
+import { Narration } from "../components/Narration";
 
 // Scene 1 — "AI evaluating the candidate".
 // Beats (at 30fps):
@@ -27,7 +20,7 @@ const NARRATION: NarrationLine[] = [
 //   3.5s  chip flips processing -> evaluated (orange -> green)
 //   4.0s  summary + strengths fade/slide in
 //   ~7s   hold
-export const AiEvaluating: React.FC = () => {
+export const AiEvaluating: React.FC<{ withVoice?: boolean }> = ({ withVoice = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -214,7 +207,7 @@ export const AiEvaluating: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      <Narration lines={NARRATION} bottom={40} />
+      <Narration clip="ai-evaluation" withVoice={withVoice} bottom={40} />
 
       {/* Brand mark — top-left; the bottom strip belongs to the narration. */}
       <div style={{ position: "absolute", top: 54, left: 64, display: "flex", alignItems: "center", gap: 14 }}>

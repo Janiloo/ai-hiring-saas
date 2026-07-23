@@ -19,21 +19,23 @@ const f = (sec: number) => Math.round(sec * VIDEO.fps);
 
 // Full stitched promo — the product story end to end:
 // write the post -> AI scores applicants -> move them, candidate is notified.
-const MakesPromo: React.FC = () => (
+// `withVoice` adds the Deepgram narration (sound-on cut for portfolio/YouTube);
+// the silent version is what the landing page embeds.
+const MakesPromo: React.FC<{ withVoice?: boolean }> = ({ withVoice = false }) => (
   <Series>
     <Series.Sequence durationInFrames={f(S.jobpost)}>
       <SceneWrap durationInFrames={f(S.jobpost)}>
-        <JobPostGenerator />
+        <JobPostGenerator withVoice={withVoice} />
       </SceneWrap>
     </Series.Sequence>
     <Series.Sequence durationInFrames={f(S.evaluate)}>
       <SceneWrap durationInFrames={f(S.evaluate)}>
-        <AiEvaluating />
+        <AiEvaluating withVoice={withVoice} />
       </SceneWrap>
     </Series.Sequence>
     <Series.Sequence durationInFrames={f(S.toInbox)}>
       <SceneWrap durationInFrames={f(S.toInbox)}>
-        <PipelineToInbox />
+        <PipelineToInbox withVoice={withVoice} />
       </SceneWrap>
     </Series.Sequence>
     <Series.Sequence durationInFrames={f(S.outro)}>
@@ -60,6 +62,14 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Feature-JobPost" component={JobPostGenerator} durationInFrames={f(S.jobpost)} {...base} />
       <Composition id="Feature-AiEvaluation" component={AiEvaluating} durationInFrames={f(S.evaluate)} {...base} />
       <Composition id="Feature-PipelineToInbox" component={PipelineToInbox} durationInFrames={f(S.toInbox)} {...base} />
+      {/* Sound-on cut (Deepgram narration) — for portfolio / YouTube */}
+      <Composition
+        id="MakesPromoVoiceover"
+        component={MakesPromo}
+        defaultProps={{ withVoice: true }}
+        durationInFrames={f(S.jobpost + S.evaluate + S.toInbox + S.outro)}
+        {...base}
+      />
       {/* Standalone scenes kept for preview */}
       <Composition id="Scene2-Pipeline" component={PipelineMove} durationInFrames={f(S.pipeline)} {...base} />
       <Composition id="Scene3-Inbox" component={CandidateInbox} durationInFrames={f(S.inbox)} {...base} />
