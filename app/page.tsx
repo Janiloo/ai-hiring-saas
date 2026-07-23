@@ -2,6 +2,7 @@ import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import Icon, { type IconName } from "@/components/ui/Icon";
 import ThemeToggle from "@/components/ThemeToggle";
+import FeatureVideo from "@/components/FeatureVideo";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Makes landing page — the public front door. Pure server component: no auth
@@ -29,6 +30,28 @@ const FEATURES: { icon: IconName; title: string; body: string; ai?: boolean }[] 
   { icon: "building",  title: "Organization Management", body: "Multi-tenant by design. Your data stays yours — isolated per organization at the database level." },
   { icon: "chart",     title: "Reports & Analytics",     body: "Live hiring metrics from real data: pipeline health, interview load, AI evaluation coverage." },
   { icon: "users",     title: "Multi-user Collaboration", body: "Interview feedback, candidate notes, and activity timelines keep the whole team on the same page." },
+];
+
+// Product clips rendered from the Makes design system (see remotion/).
+const DEMOS: { title: string; body: string; src: string; poster: string }[] = [
+  {
+    title: "AI writes the job post",
+    body: "Enter the role details once. AI drafts a polished, board-ready advertisement you can copy straight to LinkedIn, Indeed, or your careers page — saved with the job and editable anytime.",
+    src: "/video/job-post.mp4",
+    poster: "/video/job-post.jpg",
+  },
+  {
+    title: "AI reads and scores every resume",
+    body: "Applications arriving by email are parsed automatically and scored 0–100 against the job, with strengths, weaknesses, and a recruiter-ready summary — all in the background.",
+    src: "/video/ai-evaluation.mp4",
+    poster: "/video/ai-evaluation.jpg",
+  },
+  {
+    title: "Move a candidate — they hear instantly",
+    body: "Every pipeline move fires a branded email to the applicant the moment it happens. Recruiters never write a status update, and candidates always know where they stand.",
+    src: "/video/pipeline-inbox.mp4",
+    poster: "/video/pipeline-inbox.jpg",
+  },
 ];
 
 /** Stylized product preview built from real UI primitives — replaceable with a screenshot later. */
@@ -76,6 +99,7 @@ export default function LandingPage() {
             <Logo size={30} />
           </Link>
           <div className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
+            <a href="#demo" className="transition-colors hover:text-gray-900">Demo</a>
             <a href="#features" className="transition-colors hover:text-gray-900">Features</a>
             <a href="#solutions" className="transition-colors hover:text-gray-900">Solutions</a>
             <a href="#about" className="transition-colors hover:text-gray-900">About</a>
@@ -137,6 +161,44 @@ export default function LandingPage() {
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+        {/* ── See it in action (product clips) ─────────────────────────── */}
+        <section id="demo" className="scroll-mt-20 px-6 py-20">
+          <div className="mx-auto max-w-5xl">
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: "var(--accent)" }}>
+                See it in action
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold text-gray-900 md:text-4xl" style={display}>
+                The whole hiring loop, automated
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
+                No signup needed — these are real screens from Makes. Watch a role go from
+                a rough brief to a scored applicant to a candidate who&apos;s already been notified.
+              </p>
+            </div>
+
+            <div className="mt-14 flex flex-col gap-16">
+              {DEMOS.map((d, i) => (
+                <div key={d.src}>
+                  <div className="mb-4 flex items-baseline gap-3">
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-extrabold text-white"
+                      style={{ background: "var(--brand)", boxShadow: "inset 0 -2px 0 var(--edge)", ...display }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900" style={display}>{d.title}</h3>
+                      <p className="mt-0.5 text-sm leading-relaxed text-gray-600">{d.body}</p>
+                    </div>
+                  </div>
+                  <FeatureVideo src={d.src} poster={d.poster} label={d.title} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

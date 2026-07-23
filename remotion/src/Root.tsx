@@ -2,8 +2,10 @@ import React from "react";
 import { Composition, Series } from "remotion";
 import { loadFont as loadDisplay } from "@remotion/google-fonts/BricolageGrotesque";
 import { AiEvaluating } from "./scenes/AiEvaluating";
+import { JobPostGenerator } from "./scenes/JobPostGenerator";
 import { PipelineMove } from "./scenes/PipelineMove";
 import { CandidateInbox } from "./scenes/CandidateInbox";
+import { PipelineToInbox } from "./scenes/PipelineToInbox";
 import { Outro } from "./scenes/Outro";
 import { SceneWrap } from "./components/SceneWrap";
 import { VIDEO } from "./theme";
@@ -12,25 +14,26 @@ import { VIDEO } from "./theme";
 loadDisplay();
 
 // Scene durations (seconds).
-const S = { evaluate: 7.5, pipeline: 8, inbox: 9, outro: 3.5 };
+const S = { jobpost: 9.5, evaluate: 7.5, toInbox: 10, pipeline: 8, inbox: 9, outro: 3.5 };
 const f = (sec: number) => Math.round(sec * VIDEO.fps);
 
-// Full stitched promo — scenes cross-dissolve via SceneWrap fades.
+// Full stitched promo — the product story end to end:
+// write the post -> AI scores applicants -> move them, candidate is notified.
 const MakesPromo: React.FC = () => (
   <Series>
+    <Series.Sequence durationInFrames={f(S.jobpost)}>
+      <SceneWrap durationInFrames={f(S.jobpost)}>
+        <JobPostGenerator />
+      </SceneWrap>
+    </Series.Sequence>
     <Series.Sequence durationInFrames={f(S.evaluate)}>
       <SceneWrap durationInFrames={f(S.evaluate)}>
         <AiEvaluating />
       </SceneWrap>
     </Series.Sequence>
-    <Series.Sequence durationInFrames={f(S.pipeline)}>
-      <SceneWrap durationInFrames={f(S.pipeline)}>
-        <PipelineMove />
-      </SceneWrap>
-    </Series.Sequence>
-    <Series.Sequence durationInFrames={f(S.inbox)}>
-      <SceneWrap durationInFrames={f(S.inbox)}>
-        <CandidateInbox />
+    <Series.Sequence durationInFrames={f(S.toInbox)}>
+      <SceneWrap durationInFrames={f(S.toInbox)}>
+        <PipelineToInbox />
       </SceneWrap>
     </Series.Sequence>
     <Series.Sequence durationInFrames={f(S.outro)}>
@@ -50,11 +53,14 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="MakesPromo"
         component={MakesPromo}
-        durationInFrames={f(S.evaluate + S.pipeline + S.inbox + S.outro)}
+        durationInFrames={f(S.jobpost + S.evaluate + S.toInbox + S.outro)}
         {...base}
       />
-      {/* Individual scenes for isolated preview */}
-      <Composition id="Scene1-AiEvaluating" component={AiEvaluating} durationInFrames={f(S.evaluate)} {...base} />
+      {/* Feature clips — embedded individually on the landing page */}
+      <Composition id="Feature-JobPost" component={JobPostGenerator} durationInFrames={f(S.jobpost)} {...base} />
+      <Composition id="Feature-AiEvaluation" component={AiEvaluating} durationInFrames={f(S.evaluate)} {...base} />
+      <Composition id="Feature-PipelineToInbox" component={PipelineToInbox} durationInFrames={f(S.toInbox)} {...base} />
+      {/* Standalone scenes kept for preview */}
       <Composition id="Scene2-Pipeline" component={PipelineMove} durationInFrames={f(S.pipeline)} {...base} />
       <Composition id="Scene3-Inbox" component={CandidateInbox} durationInFrames={f(S.inbox)} {...base} />
       <Composition id="Outro" component={Outro} durationInFrames={f(S.outro)} {...base} />

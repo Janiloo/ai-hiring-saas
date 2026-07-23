@@ -71,7 +71,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Static assets bypass the proxy entirely. Media extensions (mp4/webm/…) must
+  // be listed too — otherwise public/ videos are treated as app routes and an
+  // unauthenticated request gets redirected to /login instead of the file.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm|mov|m4v|woff2?)$).*)",
   ],
 };
