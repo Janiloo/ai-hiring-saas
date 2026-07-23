@@ -1,12 +1,12 @@
 interface LogoProps {
   /** Height of the mark in px. */
   size?: number;
-  /** Render the "autome." wordmark next to the mark. */
+  /** Render the "makes." wordmark next to the mark. */
   showWordmark?: boolean;
 }
 
-// Autome brand mark: two overlapping circles — ink-navy (the organization) and
-// orange (the AI) — meeting in a deep plum lens where Autome does its work.
+// Makes brand mark: two overlapping circles — ink-navy (the organization) and
+// orange (the AI) — meeting in a deep plum lens where Makes does its work.
 // Colors follow the brand tokens so the mark adapts to light/dark themes.
 // Distinct from the organization logo that admins upload in Settings.
 export default function Logo({ size = 40, showWordmark = true }: LogoProps) {
@@ -29,7 +29,7 @@ export default function Logo({ size = 40, showWordmark = true }: LogoProps) {
           className="text-xl font-bold text-gray-900"
           style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}
         >
-          autome<span style={{ color: "var(--accent)" }}>.</span>
+          Makes<span style={{ color: "var(--accent)" }}>.</span>
         </span>
       )}
     </div>

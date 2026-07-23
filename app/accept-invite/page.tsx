@@ -3,7 +3,7 @@ import { getInvitationByToken } from "@/lib/queries/invitations";
 import AcceptInviteClient from "@/components/invitations/AcceptInviteClient";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Accept Invitation — Autome" };
+export const metadata: Metadata = { title: "Accept Invitation — Makes" };
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;

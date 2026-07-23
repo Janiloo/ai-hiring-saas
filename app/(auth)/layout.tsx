@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
         {children}
         <p className="mt-8 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} Autome · AI-powered Organization Automation
+          © {new Date().getFullYear()} Makes · AI-powered Organization Automation
         </p>
       </div>
     </div>

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import Icon, { type IconName } from "@/components/ui/Icon";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Autome landing page — the public front door. Pure server component: no auth
+// Makes landing page — the public front door. Pure server component: no auth
 // dependency, respects the cookie theme set by the app.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -13,7 +14,7 @@ const STEPS: { title: string; body: string }[] = [
   { title: "Create your organization", body: "Spin up a workspace in minutes — no setup calls, no sales demo required." },
   { title: "Invite your team", body: "Admins, recruiters, and interviewers each get exactly the access their role needs." },
   { title: "Create job posts", body: "Draft the role once; let AI write the polished advertisement for every job board." },
-  { title: "Receive applications automatically", body: "Candidates email their resume — Autome ingests, files, and stores it without a click." },
+  { title: "Receive applications automatically", body: "Candidates email their resume — Makes ingests, files, and stores it without a click." },
   { title: "AI evaluates candidates", body: "Every resume is parsed and scored against the job in the background." },
   { title: "Manage interviews and hiring", body: "Move candidates through a clear pipeline, schedule interviews, collect feedback." },
   { title: "Track organizational workflows", body: "Reports, audit trails, and team activity — always current, never assembled by hand." },
@@ -71,7 +72,7 @@ export default function LandingPage() {
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-background/90 backdrop-blur">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" aria-label="Autome home">
+          <Link href="/" aria-label="Makes home">
             <Logo size={30} />
           </Link>
           <div className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
@@ -80,6 +81,7 @@ export default function LandingPage() {
             <a href="#about" className="transition-colors hover:text-gray-900">About</a>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link href="/login" className="btn-ghost btn-sm">Sign In</Link>
             <Link href="/register" className="btn-primary btn-sm">Get Started</Link>
           </div>
@@ -99,7 +101,7 @@ export default function LandingPage() {
               Decide like a human.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-gray-600">
-              Autome helps organizations automate recruitment, collaboration, and operational
+              Makes helps organizations automate recruitment, collaboration, and operational
               workflows using AI. Applications arrive, resumes are read, candidates are scored —
               your team just makes the calls that matter.
             </p>
@@ -188,10 +190,10 @@ export default function LandingPage() {
           <div className="flex justify-center">
             <Logo size={40} showWordmark={false} />
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900" style={display}>Why Autome</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900" style={display}>Why Makes</h2>
           <p className="mt-4 text-base leading-relaxed text-gray-600">
             Hiring teams spend their best hours on busywork: reading identical resumes, copying
-            details into spreadsheets, chasing status updates. Autome exists to hand that work to
+            details into spreadsheets, chasing status updates. Makes exists to hand that work to
             machines — while keeping every decision that affects a person in human hands. AI never
             moves a candidate through your pipeline. It reads, scores, and summarizes; your team
             judges. That boundary is built into the product, not written in a policy.
@@ -222,7 +224,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
           <Logo size={24} />
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} Autome · AI-powered Organization Automation
+            © {new Date().getFullYear()} Makes · AI-powered Organization Automation
           </p>
           <div className="flex gap-5 text-xs font-medium text-gray-500">
             <Link href="/login" className="hover:text-gray-900">Sign In</Link>

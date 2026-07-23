@@ -23,9 +23,9 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Autome — AI-powered Organization Automation",
+  title: "Makes — AI-powered Organization Automation",
   description:
-    "Autome helps organizations automate recruitment, collaboration, and operational workflows using AI.",
+    "Makes helps organizations automate recruitment, collaboration, and operational workflows using AI.",
 };
 
 export default async function RootLayout({

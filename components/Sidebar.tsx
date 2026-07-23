@@ -34,7 +34,7 @@ function OrgMark({ orgLogoUrl, orgName, sizeClass = "h-8 w-8" }: { orgLogoUrl: s
     />
   ) : (
     <div className={`${sizeClass} flex shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white`}>
-      {orgName ? orgName[0].toUpperCase() : "A"}
+      {orgName ? orgName[0].toUpperCase() : "M"}
     </div>
   );
 }
@@ -93,7 +93,7 @@ export default function Sidebar() {
         </button>
         <div className="flex min-w-0 items-center gap-2">
           <OrgMark orgLogoUrl={orgLogoUrl} orgName={orgName} sizeClass="h-7 w-7" />
-          <span className="truncate text-sm font-semibold text-gray-900">{orgName ?? "Autome"}</span>
+          <span className="truncate text-sm font-semibold text-gray-900">{orgName ?? "Makes"}</span>
         </div>
       </header>
 
@@ -117,7 +117,7 @@ export default function Sidebar() {
         <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
           <OrgMark orgLogoUrl={orgLogoUrl} orgName={orgName} />
           <span className="truncate text-base font-semibold text-gray-900">
-            {orgName ?? "Autome"}
+            {orgName ?? "Makes"}
           </span>
           <button
             type="button"
